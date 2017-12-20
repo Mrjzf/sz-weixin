@@ -1,0 +1,100 @@
+<template>
+  <div id="recommend">
+
+    <top></top>
+
+    <mt-swipe :auto="4000">
+      <mt-swipe-item v-for="(item, index) in bannerList" :key="item.id">
+        <img :src="item.imgUrl" alt="">
+      </mt-swipe-item>
+    </mt-swipe>
+
+    <reacommend1 fromReacommend="基本频道推荐"></reacommend1>
+
+    <reacommend1 fromReacommend="付费频道推荐"></reacommend1>
+
+    <reacommend2></reacommend2>
+
+    <reacommend3 fromReacommend="高清电影推荐"></reacommend3>
+
+    <reacommend3 fromReacommend="高清剧集推荐"></reacommend3>
+
+    <reacommend3 fromReacommend="综合高清推荐"></reacommend3>
+
+    <div id="footerHeight"></div>
+
+  </div>
+</template>
+
+<script>
+//  import 'mint-ui/lib/style.min.css'
+  import reacommend1 from '@/components/Recommend/Recommend_Public/Recommend1.vue'
+  import reacommend2 from '@/components/Recommend/Recommend_Public/Recommend2.vue'
+  import reacommend3 from '@/components/Recommend/Recommend_Public/Recommend3.vue'
+  import top from '@/components/All_Public/Top.vue'
+
+  import banImg1 from '@/assets/images/banner1.png'
+  import banImg2 from '@/assets/images/banner2.png'
+
+  export default {
+    data(){
+      return {
+        bannerList: [
+          {imgUrl: banImg1},
+          {imgUrl: banImg2}
+        ]
+      }
+    },
+    components: {
+      reacommend1,
+      reacommend2,
+      reacommend3,
+      top
+    },
+
+  }
+</script>
+
+<style scoped>
+  img {
+    display: block;
+    width: 100%;
+  }
+
+
+  .mint-swipe {
+    overflow: hidden;
+    position: relative;
+    width: 100%;
+    height: 150px;
+    margin-top: 8vh;
+  }
+
+  .mint-swipe-items-wrap {
+    position: absolute;
+    overflow: hidden;
+    width: 100%;
+    /*height: 150px;*/
+    -webkit-transform: translateZ(0);
+    transform: translateZ(0)
+  }
+
+  .mint-swipe-items-wrap > div {
+    position: absolute;
+    -webkit-transform: translateX(-100%);
+    transform: translateX(-100%);
+    width: 100%;
+    /*height: 150px;*/
+    display: none
+  }
+
+  .mint-swipe-items-wrap > div.is-active {
+    display: block;
+    -webkit-transform: none;
+    transform: none;
+  }
+
+  #footerHeight {
+    margin-bottom: 50px;
+  }
+</style>

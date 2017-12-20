@@ -1,0 +1,162 @@
+<template>
+  <div id="rc">
+
+    <!--<header>-->
+      <!--<div id="back">-->
+        <!--<span class="line1"></span>-->
+        <!--<span class="line2"></span>-->
+      <!--</div>-->
+      <!--<span id="STBname">XXX的机顶盒</span>-->
+      <!--<p id="changeSTB">-->
+        <!--切换-->
+      <!--</p>-->
+    <!--</header>-->
+
+    <!--<div id="rc_body">-->
+
+      <!--<span class="ending">-->
+        <!--<img src="../../assets/images/RC/remote_icon_dormancy_n.png" alt="" class="ending2">-->
+      <!--</span>-->
+
+      <!--<div id="volume">-->
+        <!--<img src="../../assets/images/RC/remote_-icon_mute_n.png" alt="" class="volSub">-->
+        <!--<img src="../../assets/images/RC/remote_-icon_volume_n.png" alt="" class="volAdd">-->
+      <!--</div>-->
+
+      <!--<span class="menu">-->
+        <!--<img src="../../assets/images/RC/remote_icon_menu_n.png" class="menu2">-->
+      <!--</span>-->
+
+    <!--</div>-->
+
+    <img src="../../assets/images/RC.png" alt="">
+
+  </div>
+</template>
+
+<script>
+  export default {
+    data(){
+      return {}
+    }
+  }
+</script>
+
+<style scoped>
+  #rc {
+    width: 100%;
+    /*height: 400px;*/
+    overflow: hidden;
+    background-color: #EAEAEA;
+  }
+  img {
+    width: 100%;
+  }
+
+  /*header {*/
+    /*width: 100%;*/
+    /*height: 50px;*/
+    /*background-color: #fff;*/
+
+    /*line-height: 0;*/
+    /*font-size: 16px;*/
+  /*}*/
+
+  /*#back {*/
+    /*width: 21px;*/
+    /*height: 21px;*/
+    /*position: relative;*/
+    /*left: 20px;*/
+    /*top: 11px;*/
+    /*border-radius: 25px;*/
+    /*border: 2px solid #FF3E05;*/
+  /*}*/
+  /*#back .line1 {*/
+    /*display: block;*/
+    /*width: 13px;*/
+    /*height: 2px;*/
+    /*background-color: #FF3E05;*/
+    /*border-radius: 1px;*/
+    /*position: absolute;*/
+    /*top: 10px;*/
+    /*left: 4px;*/
+    /*transform: rotate(45deg);*/
+  /*}*/
+  /*#back .line2 {*/
+    /*display: block;*/
+    /*width: 13px;*/
+    /*height: 2px;*/
+    /*background-color: #FF3E05;*/
+    /*border-radius: 1px;*/
+    /*position: absolute;*/
+    /*top: 10px;*/
+    /*left: 4px;*/
+    /*transform: rotate(-45deg);*/
+  /*}*/
+
+  /*#STBname {*/
+    /*display: block;*/
+    /*text-align: center;*/
+  /*}*/
+
+  /*#changeSTB {*/
+    /*height: 16px;*/
+    /*float: right;*/
+    /*margin: 0 20px 0 0;*/
+    /*color: #FF3E05;*/
+  /*}*/
+
+  /*#rc_body {*/
+    /*overflow: hidden;*/
+    /*width: 100%;*/
+  /*}*/
+  /*#rc_body .ending {*/
+    /*display: block;*/
+    /*width: 15%;*/
+    /*margin: 5% 0 0 5%;*/
+    /*float: left;*/
+    /*background: url("../../assets/images/RC/remote_icon_dormancy_n.png") no-repeat;*/
+    /*background-size: 100%;*/
+  /*}*/
+  /*#rc_body .ending2 {*/
+    /*width: 100%;*/
+    /*opacity: 0;*/
+  /*}*/
+  /*#rc_body .ending:hover {*/
+    /*background: url("../../assets/images/RC/remote_icon_dormancy_s.png") no-repeat;*/
+    /*background-size: 100%;*/
+  /*}*/
+  /*#rc_body .menu {*/
+    /*display: block;*/
+    /*width: 15%;*/
+    /*margin: 5% 5% 0 0;*/
+    /*background: url("../../assets/images/RC/remote_icon_menu_n.png") no-repeat;*/
+    /*background-size: 100%;*/
+    /*float: right;*/
+  /*}*/
+  /*#rc_body .menu2 {*/
+    /*width: 100%;*/
+    /*opacity: 0;*/
+  /*}*/
+  /*#volume {*/
+    /*width: 45%;*/
+    /*height: 55px;*/
+    /*margin: 6% 0 0 7%;*/
+    /*float: left;*/
+    /*background: url("../../assets/images/RC/remote_-icon_handle.png") no-repeat;*/
+    /*background-size: 100%;*/
+    /*position: relative;*/
+  /*}*/
+  /*#volume .volSub {*/
+    /*width: 30%;*/
+    /*position: absolute;*/
+    /*top: 2px;*/
+    /*left: 5px;*/
+  /*}*/
+  /*#volume .volAdd {*/
+    /*width: 30%;*/
+    /*position: absolute;*/
+    /*top: 2px;*/
+    /*right: 5px;*/
+  /*}*/
+</style>

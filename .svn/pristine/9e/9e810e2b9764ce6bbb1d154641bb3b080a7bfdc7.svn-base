@@ -1,0 +1,191 @@
+<template>
+  <div class="templ">
+
+    <LiveHead :tolivehead="tolivehead"></LiveHead>
+    <router-view></router-view>
+    <section @touchend ="toNext" @touchstart="judge">
+      <aside>
+
+        <!-- 这里应该是写死的,用v-for来循环输出 -->
+        <!-- 这里将index作为参数传到changeActive里去 -->
+        <ul>
+          <li v-for="(item,index) in channels" :class="{active:isActive==index}"
+          @click="changeActive(index)">{{item}}
+            <div class="dash" v-show="isActive==index"></div>
+          </li>
+        </ul>
+      </aside>
+      <div id="content">
+
+        <!--这里的数据用v-for循环输出-->
+        <ul>
+          <li>
+            <img src="../../assets/zhejiang.png" />
+            <figure>
+              <img src="../../assets/zjtb.png" />
+              <h1>江苏卫视</h1>
+              <h2>{{time}}{{play}}</h2>
+              <h2>{{time}}{{play}}</h2>
+            </figure>
+
+            <!--消除浮动的-->
+            <div class="clear"></div>
+          </li>
+          <li>
+            <img src="../../assets/zhejiang.png" />
+            <figure>
+              <img src="../../assets/zjtb.png" />
+              <h1>江苏卫视</h1>
+              <h2>{{time}}{{play}}</h2>
+              <h2>{{time}}{{play}}</h2>
+            </figure>
+
+            <!--消除浮动的-->
+            <div class="clear"></div>
+          </li>
+          <li>
+            <img src="../../assets/zhejiang.png" />
+            <figure>
+              <img src="../../assets/zjtb.png" />
+              <h1>江苏卫视</h1>
+              <h2>{{time}}{{play}}</h2>
+              <h2>{{time}}{{play}}</h2>
+            </figure>
+
+            <!--消除浮动的-->
+            <div class="clear"></div>
+          </li>
+        </ul>
+      </div>
+      <div class="clear"></div>
+    </section>
+
+
+  </div>
+</template>
+
+<script>
+import LiveHead from './LiveHead.vue'
+
+
+export default {
+  data: function() {
+    return {
+      channels:['中央','卫视','本地','影视','特色','付费','综艺'],
+      tolivehead:1,
+      isActive:0,
+      time:"12:00 ",
+      play:"炮神2",
+      startX:0,
+      endX:0,
+      changeX:0
+    }
+  },
+  components:{
+    LiveHead
+  },
+  methods:{
+    changeActive:function (index) {
+      this.isActive=index;
+    },
+
+    //在点击屏幕开始收集坐标数据
+    judge:function (e) {
+      this.startX=e.changedTouches[0].clientX;
+    },
+    //判断滑动方向,模仿点击事件
+    //大于10像素就判断为滑动
+    toNext:function (e) {
+      this.endX=e.changedTouches[0].clientX;
+      this.changeX=this.startX-this.endX;
+      if((Math.abs(this.changeX)>10)&&this.changeX>0){
+        document.getElementById('show').click();
+      }else if((Math.abs(this.changeX)>10)&&this.changeX<0){
+        //do nothing
+      }
+    }
+  }
+};
+
+</script>
+
+<style scoped>
+
+section{
+  background-color: #fff;
+}
+/*左边的导航*/
+aside{
+  border-right:2px solid #eee;
+  width:25%;
+  float: left;
+}
+.clear{
+  clear: both;
+}
+aside ul li{
+  list-style:none;
+  position: relative;
+  height:49px;
+  text-align:center;
+  line-height:49px;
+  font-size:14px;
+  font-family: "Microsoft YaHei";
+}
+.dash{
+  width:2px;
+  background-color: #FF3E05;
+  height:25px;
+  position: absolute;
+  top:11px;
+  right:-2px;
+}
+.active{
+  font-size:15px;
+  color:#FF3E05;
+}
+
+
+/*右边的content*/
+#content{
+  width:75%;
+  float: right;
+}
+#content ul li{
+  padding:9px 0 8px 9px;
+  height: 89px;
+}
+#content li img{
+  float: left;
+}
+figure{
+  margin: 0 0 0 5%;
+  padding: 0;
+  float: left;
+}
+h1{
+  font-weight: normal;
+  margin:0;
+  padding-left: 20px;
+  font-size:15px;
+  font-family: "Microsoft Yahei";
+}
+h2{
+  font-weight: normal;
+  font-size:14px;
+  font-family: "Microsoft Yahei";
+
+}
+
+/*为什么这里是从3开始*/
+h2:nth-child(3){
+  margin-top:15px;
+  color:#555;
+}
+h2:nth-child(4){
+  margin-top:10px;
+  color:#999;
+}
+
+</style>
+

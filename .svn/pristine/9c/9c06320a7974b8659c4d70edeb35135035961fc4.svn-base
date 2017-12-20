@@ -1,0 +1,308 @@
+<template>
+  <div class="templ1">
+
+
+    <div id="headTop">
+      <!--先用图片代替-->
+      <div id="video">
+        <!--<img src="../../assets/timg.png"/>-->
+        <video id="video1" controls autoplay>
+          <source type="video/mp4" :src="videoAddress">
+        </video>
+
+        <span class="icon-chs_sywx_ic_jt_left" @click="goBack"></span>
+
+      </div>
+
+      <div id="videoMsg">
+        <div id="Msg">
+          <img src="../../assets/images/ic_now.png" alt="">
+          <p>{{ channelName }}&nbsp;&nbsp;|&nbsp;&nbsp;{{ showName }}</p>
+          <span>电视播放</span>
+        </div>
+        <div id="Look">
+        <span @click="goDownLoad();">
+          试看10分钟&nbsp;&nbsp;下载苏州云媒体客户端看全片
+        </span>
+        </div>
+      </div>
+
+      <header>
+        <ul>
+          <li @click="changeDash('show')">
+            <!--<router-link id="show" to="/live/Channel/show" :class="{active:tolivehead==2}">节目单</router-link>-->
+            节目单
+            <div class="dash" v-show="whatDash=='show'"></div>
+          </li>
+          <li @click="changeDash('comment')">
+            <!--<router-link id="comment" to="/live/Channel/comment" :class="{active:tolivehead==3}"></router-link>-->
+            评论
+            <div class="dash" v-show="whatDash=='comment'"></div>
+          </li>
+        </ul>
+      </header>
+    </div>
+
+    <!--<router-view></router-view>-->
+
+    <Show v-show="whatDash=='show'" :channelName="channelName" v-on:cb="scb"></Show>
+
+    <Comment v-show="whatDash=='comment'"></Comment>
+
+  </div>
+
+</template>
+
+<script>
+
+  import Show from './Show.vue'
+  import Comment from './Comment.vue'
+
+  export default {
+    data: function () {
+      return {
+        channelName: this.$route.query.name,
+        showName: this.$route.query.currentShow,
+        channelId: this.$route.query.channelId,
+        whatDash: "show",
+      }
+    },
+    props: ["tolivehead"],
+    created(){
+
+    },
+    mounted(){
+      this.stopVideo();
+    },
+    watch: {
+      videoAddress(){
+        document.getElementById("video1").load();
+      }
+    },
+    components: {
+      Show,
+      Comment
+    },
+    computed: {
+      videoAddress(){
+        return this.$store.state.videoAddress;
+      }
+    },
+    methods: {
+      changeDash(v1){
+        this.whatDash = v1;
+      },
+      scb(name){
+        this.showName = name;
+      },
+      goDownLoad() {
+        window.location.href = "http://dp2.sz96296.com:8091/download/index.html";
+      },
+      goBack() {
+        this.$router.go(-1);
+      },
+      stopVideo() {
+        var vid = document.getElementById("video1");
+        vid.ontimeupdate = function() {
+          if (vid.currentTime > 600) {
+            vid.pause();
+          }
+        };
+      }
+    }
+  };
+
+</script>
+
+<style scoped>
+
+
+  p {
+    margin: 0;
+    padding: 0;
+  }
+  .templ1 {
+    background-color: #fff;
+  }
+
+  #video {
+    /*height:203px;*/
+    width: 100%;
+    position: relative;
+  }
+
+  #video img {
+    /*height:203px;*/
+    width: 100%;
+  }
+
+  #videoMsg {
+    width: 100%;
+    height: 12vh;
+    /*background-color: red;*/
+  }
+
+  #Msg {
+    width: 100%;
+    height: 5vh;
+    line-height: 5vh;
+    border-bottom: 1px solid #e7e7e7;
+  }
+
+  #Msg img {
+    width: 5vw;
+    margin: 1vh 0 0 2vw;
+    display: inline-block;
+    float: left;
+  }
+
+  #Msg p {
+    width: 65vw;
+    margin: 0 0 0 2vw;
+    float: left;
+    font-size: 14px;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+  }
+
+  #Msg span {
+    float: right;
+    margin: 0.4vh 2vw 0 0;
+    width: 24vw;
+    height: 4vh;
+    line-height: 4vh;
+    text-align: center;
+    border-radius: 1.5vh;
+    background-color: #FF3E05;
+    color: white;
+  }
+
+  #Look {
+    width: 100%;
+    height: 5vh;
+    border-bottom: 6px solid #e7e7e7;
+  }
+
+  #Look span {
+    display: block;
+    width: 95%;
+    height: 4vh;
+    margin: 0 auto;
+    transform: translateY(0.5vh);
+    border-radius: 5px;
+    background-color: #FB5C5C;
+    color: white;
+    font-size: 15px;
+    text-align: center;
+    line-height: 4.5vh;
+  }
+
+  header {
+    height: 5vh;
+    margin-top: -7px;
+    border-bottom: 2px solid #eee;
+    background-color: #fff;
+    line-height: 5vh;
+  }
+  header ul {
+    height: 5vh;
+    line-height: 5vh;
+  }
+
+  header ul li {
+    height: 5vh;
+    line-height: 5vh;
+    text-align: center;
+    width: 49%;
+    float: left;
+    position: relative;
+  }
+
+  #headTop {
+    position: fixed;
+    top: 0;
+    z-index: 999;
+    background-color: #fff;
+  }
+
+  img {
+    display: block;
+    max-width: 100%;
+  }
+
+  a {
+    color: #222222;
+    font-size: 14px;
+    line-height: 7vh;
+    font-family: "Microsoft YaHei";
+  }
+
+  /*li {*/
+    /*list-style: none;*/
+    /*display: inline-block;*/
+    /*width: 49%;*/
+    /*position: relative;*/
+    /*text-align: center;*/
+  /*}*/
+
+  .dash {
+    width: 17px;
+    height: 2px;
+    background-color: #FF3E05;
+    display: inline-block;
+  }
+
+  /*li:nth-child(1) div{*/
+  /*position: absolute;*/
+  /*left:40%;*/
+  /*top:7vh;*/
+  /*}*/
+  li:nth-child(1) div {
+    position: absolute;
+    left: 46%; /* 虽然用的是百分比，还是不能响应式对齐 */
+    top: 5vh;
+  }
+
+  li:nth-child(2) div {
+    position: absolute;
+    right: 45%;
+    top: 5vh;
+  }
+
+  .active {
+    font-size: 15px;
+    color: #FF3E05;
+  }
+
+  /*字体图标样式  */
+  .icon-chs_sywx_ic_detail_tp, .icon-chs_sywx_ic_jt_left {
+    width: 31px;
+    height: 31px;
+    color: #fff;
+    text-align: center;
+    line-height: 31px;
+    border-radius: 50%;
+    background-color: #000;
+    font-size: 20px;
+    opacity: 0.3;
+  }
+
+  .icon-chs_sywx_ic_jt_left {
+    position: absolute;
+    left: 16px;
+    top: 9px;
+  }
+
+  .icon-chs_sywx_ic_detail_tp {
+    position: absolute;
+    right: 16px;
+    top: 9px;
+  }
+
+  video {
+    width: 100%;
+    height: 28.11vh;
+  }
+</style>
+

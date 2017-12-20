@@ -1,0 +1,112 @@
+import Vue from 'vue'
+import Router from 'vue-router'
+
+//引入推荐
+import Recommend from '@/components/Recommend/Recommend.vue'
+
+//引入VOD相关
+import VOD from '@/components/VOD/VOD.vue'
+import VOD_Category_Con from '@/components/VOD/VOD_Category_Con/VOD_Category_Con.vue'
+
+//引入遥控器
+import RC from '@/components/RC/RC.vue'
+
+//引入直播
+import Channel from '@/components/live/Channel.vue'
+import Comment from '@/components/live/Comment.vue'
+import Show from '@/components/live/Show.vue'
+
+//引入搜索
+import Search from '@/components/search/Search.vue'
+
+//引入详情
+import Detail from '@/components/detail/Detail.vue'
+
+//引入我的
+import My from '@/components/my/My.vue'
+
+//引入播放记录
+import RecordZb from '@/components/record/RecordZb.vue'
+import RecordDb from '@/components/record/RecordDb.vue'
+import RecordHk from '@/components/record/RecordHk.vue'
+
+
+Vue.use(Router);
+
+
+export default new Router({
+  linkActiveClass:'mui-active',
+	routes: [
+
+    //search
+    {
+      path: '/search',
+      name: 'Search',
+      component: Search
+    },
+
+
+	  //初始
+    { path: '/', redirect:'/Recommend'},
+    //推荐
+    { path: '/Recommend', name: 'Recommend', component: Recommend},
+    //VOD相关
+    { path: '/VOD', name: 'VOD', component: VOD},
+    { path: '/VODCategoryCon/:typeName', name: 'VOD_Category_Con', component: VOD_Category_Con},
+    //RC
+    { path: '/RC', name: 'RC', component: RC},
+
+    //detail
+    {
+      path: '/detail',
+      name: 'Detail',
+      component: Detail
+    },
+
+    //live
+    {
+      path: '/live/channel',
+      name: 'Channel',
+      component: Channel
+    },
+    {
+      path: '/live/comment',
+      name: 'Comment',
+      component: Comment
+    },
+    {
+      path: '/live/show',
+      name: 'Show',
+      component: Show
+    },
+
+
+    //my
+    {
+      path: '/my',
+      name: 'My',
+      component: My
+    },
+
+
+    //record
+		{
+			path: '/record/recordzb',
+			name: 'RecordZb',
+			component: RecordZb
+    },
+    {
+      path: '/record/recorddb',
+      name: 'RecordDb',
+      component: RecordDb
+    },
+    {
+      path: '/record/recordhk',
+      name: 'RecordHk',
+      component: RecordHk
+    }
+	],
+  scrollBehavior (to, from, savedPosition) {
+    return { x: 0, y: 0 }
+  }
+})

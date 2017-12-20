@@ -1,0 +1,394 @@
+<template>
+  <div class="templ">
+
+    <!--<LiveHead :tolivehead="tolivehead"></LiveHead>-->
+    <!--<div class="clearfixed"></div>-->
+
+    <!--<router-view></router-view>-->
+    <section>
+
+      <aside>
+        <!-- 这里将index作为参数传到changeActive里去 -->
+        <div class="swiper-container">
+          <div class="swiper-wrapper">
+            <div v-for="(item,index) in day" :class="{active:isActive==index}"
+                 @click="changeActive(index, item.dateInit)" class="every_swiper swiper-slide">{{item.date}}
+              <div class="dash" v-show="isActive==index"></div>
+            </div>
+          </div>
+        </div>
+      </aside>
+
+      <div id="content">
+
+        <div class="swiper-container">
+          <div class="swiper-wrapper">
+            <div v-for="(item, index) in showlist" :class="'swiper-slide' | isClick(isClick, index)" @click="huikan(channelId, channelName, item.name, item.assetId, item.status, index);">
+              <h1 :class="color | color(item.status, clickOnce, index, isClick)">
+                {{item.startTime | timeInit}}&nbsp;&nbsp;&nbsp;{{item.name}}
+              </h1>
+              <button :class="'state' | color2(item.status, clickOnce, isClick, index)">{{item.status | statusJudge}}</button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </section>
+
+  </div>
+</template>
+
+<script>
+  import LiveHead from './LiveHead.vue'
+
+  export default {
+    data: function () {
+      return {
+        day: [],
+        showlist: [],
+        tolivehead: 2,
+        isActive: 0,
+        startX: 0,
+        endX: 0,
+        changeX: 0,
+        startY: 0,
+        endY: 0,
+        changeY: 0,
+        color: "",
+        channelId: this.$route.query.channelId,
+        isClick: "",
+        clickOnce: false
+      }
+    },
+    components: {
+      LiveHead
+    },
+    props:["channelName"],
+    created(){
+      this.getShowMsg();
+      this.dateInit();
+    },
+    mounted(){
+      this.Swiper();
+      this.Swiper2();
+    },
+    updated(){
+
+    },
+    methods: {
+      changeActive: function (index, date) {
+        this.isActive = index;
+        this.isClick = "asd";
+        var channelId = this.$route.query.channelId;
+        var url = "/cms/thirdPartyPortalInterface/getProgramList.service?date=" + date + "&channelId=" + channelId + "&terminalType=mobile&resFormat=json"
+        this.$http.get(url).then(res => {
+          var data = res.body;
+          this.showlist = data.getProgramListResponse.programList.program;
+        }, res => {
+          console.log("错误!");
+        })
+      },
+      getShowMsg(){
+        var time = new Date().getFullYear() + "" + (new Date().getMonth() + 1 < 10 ? "0" + (new Date().getMonth() + 1) : (new Date().getMonth() + 1)) + "" + (new Date().getDate() + 1 < 10 ? "0" + new Date().getDate() : new Date().getDate());
+
+
+        var channelId = this.$route.query.channelId;
+
+        if (channelId == undefined) {
+          channelId = 204455;
+        }
+
+        var url = "/cms/thirdPartyPortalInterface/getProgramList.service?date=" + time + "&channelId=" + channelId + "&terminalType=mobile&resFormat=json",
+            url2 = "/cms/thirdPartyPortalInterface/listComment.service?contentType=cpg_channel&resFormat=json&targetType=mobile&contentId=" + channelId;
+
+
+
+        //获取节目清单
+        this.$http.get(url).then(res => {
+            var data = res.body;
+            this.showlist = data.getProgramListResponse.programList.program;
+          }, res => {
+            console.log("错误！" + res);
+          })
+
+        //当前频道评论
+//        this.$http.get(url2).then(res => {
+//          var data = res.body;
+////          console.log(data);
+//          this.$store.commentList = data.listCommentResponse;
+//        }, res => {
+//          console.log("错误！" + res);
+//        })
+      },
+      //在点击屏幕开始收集坐标数据
+      judge: function (e) {
+        this.startX = e.changedTouches[0].clientX;
+        this.startY = e.changedTouches[0].clientY;
+      },
+      //判断滑动方向,模仿点击事件
+      toNext: function (e) {
+        this.endX = e.changedTouches[0].clientX;
+        this.endY = e.changedTouches[0].clientY;
+        this.changeX = this.startX - this.endX;
+        this.changeY = this.startY - this.endY;
+        if ((Math.abs(this.changeX) > 25) && this.changeX > 0 &&
+          (Math.abs(this.changeX) > Math.abs(this.changeY))) {
+          document.getElementById('comment').click();
+        } else if ((Math.abs(this.changeX) > 25) && this.changeX < 0 &&
+          Math.abs(this.changeX) > Math.abs(this.changeY)) {
+          document.getElementById('channel').click();
+        }
+      },
+      dateInit(){
+        var time = new Date().getFullYear() + "" + (new Date().getMonth() + 1 < 10 ? "0" + (new Date().getMonth() + 1) : (new Date().getMonth() + 1)) + "" + (new Date().getDate() + 1 < 10 ? "0" + new Date().getDate() : new Date().getDate());
+
+        var myDate = new Date(); //获取今天日期
+        myDate.setDate(myDate.getDate() - 6);
+        var dateArray = [];
+        var dateTemp;
+        var dateinit;
+        var flag = 1;
+        for (var i = 7; i > 0; i--) {
+          dateTemp = (myDate.getMonth()+1)+"月"+myDate.getDate() + "日";
+          dateinit = myDate.getFullYear() + (myDate.getMonth() + 1 < 10 ? "0" + (new Date().getMonth() + 1) : (new Date().getMonth() + 1) + "") + (new Date().getDate() + 1 < 10 ? "0" + (new Date().getDate() + 1 - i) : new Date().getDate() + 1 - i);
+          dateArray.push({date: dateTemp, dateInit: dateinit});
+          myDate.setDate(myDate.getDate() + flag);
+        }
+        dateArray = dateArray.reverse();
+        this.day = dateArray;
+      },
+      Swiper(){
+        new Swiper('aside .swiper-container', {
+          slidesPerView: 8,
+          direction : 'vertical',
+          freeMode: true,
+          observer: true
+        });
+      },
+      Swiper2(){
+        new Swiper('#content .swiper-container', {
+          slidesPerView: 7.5,
+          spaceBetween: 0,
+          freeMode: true,
+          direction: 'vertical',
+          setWrapperSize: true,
+          observer: true
+        });
+      },
+      huikan(channelId, channelname, name, assetId, status, index){
+        if (status == 0) {
+          return
+        }
+        else if (status == 1) {
+          var url = this.$route.query.liveBroadcastAddress;
+        }
+        else if (status == 2) {
+          var url = "http://dp0.sz96296.com:7079/vod/" + assetId + "?format=m3u8&targetType=mobile&df=sd&busiType=cpg";
+        }
+//        this.$store.state.videoAddress = url;
+        this.$store.commit("videoAddress", url);
+        this.$emit("cb", name);
+//        this.$router.push({ path: '/live/liveHead', query: { channelId: channelId, name: channelname, currentShow: name, liveBroadcastAddress: url }});
+//        this.$router.go(0);
+        this.isClick = index;
+        this.clickOnce = true;
+      }
+    },
+    filters: {
+      timeInit(v1){
+        return v1.substring(9);
+      },
+      statusJudge(v1){
+        if (v1 == 0) {
+          return "预告";
+        } else if (v1 == 1) {
+          return "直播中";
+        } else if (v1 == 2) {
+          return "回看";
+        }
+      },
+      color(v1, v2, v3, v4, v5){
+        if (v3 == false) {
+          if (v2 == 0) {
+            return "h1state2";
+          } else if (v2 == 1) {
+            return "";
+          } else if (v2 == 2) {
+            return "h1state3";
+          }
+          return v2 == 0 ? v1 : "";
+        } else {
+          if (v2 == 0) {
+            return "h1state2"
+          } else {
+            if (v4 == v5) {
+              return "";
+            } else {
+              return "h1state3";
+            }
+          }
+
+        }
+      },
+      color2(v1, v2, v3, v4, v5){
+//        return v2 == 0 ? v1 + " state2" : v1;
+        if (v3 == false) {
+          if (v2 == 0) {
+            return "state2";
+          } else if (v2 == 1) {
+            return "state";
+          } else if (v2 == 2) {
+            return "state3";
+          }
+        } else {
+          if (v2 == 0) {
+            return "state2"
+          } else {
+            return v4 == v5 ? "state" : "state3";
+          }
+        }
+      },
+      isClick(v1, v2, v3) {
+        return v2 === v3 ? v1 + " isClick" : v1;
+      }
+    }
+  };
+
+</script>
+
+<style scoped>
+  .clearfixed {
+    height: 255px;
+  }
+
+  section {
+    background-color: #fff;
+    margin-top: 44vh;
+    overflow: hidden;
+  }
+
+  /*左边导航  */
+  aside {
+    border-right: 2px solid #eee;
+    width: 25%;
+    float: left;
+    height: 50vh;
+    /*margin-top: 3vh;*/
+  }
+
+  .clear {
+    clear: both;
+  }
+  aside .swiper-container {
+    height: 100%;
+  }
+  aside .swiper-container .every_swiper {
+    /*height: 49px;*/
+    text-align: center;
+    line-height: 35px;
+    font-size: 14px;
+    font-family: "Microsoft YaHei";
+    border-bottom: 1px solid #eee;
+  }
+
+  .dash {
+    width: 2px;
+    background-color: #FF3E05;
+    height: 25px;
+    position: absolute;
+    top: 11px;
+    right: -2px;
+  }
+
+  .active {
+    font-size: 15px;
+    color: #FF3E05;
+  }
+
+  /*右边的content*/
+  #content {
+    width: 74%;
+    float: right;
+    height: 50vh;
+    margin-top: 0vh;
+  }
+
+  #content .swiper-container {
+    height: 100%;
+  }
+
+  h1 {
+    /*margin:18px 0 17px 16px;*/
+    padding-left: 5px;
+    width: 50vw;
+    height: 100%;
+    /*min-height: 50px;*/
+    font-size: 15px;
+    line-height: 40px;
+    font-family: "Microsoft Yahei";
+    color: #04B456;
+    float: left;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+  }
+
+  .h1state2 {
+    color: #949494;
+  }
+  .h1state3 {
+    color: #000;
+  }
+
+  .state {
+    text-align: center;
+    width: 18vw;
+    height: 25px;
+    font-size: 12px;
+    color: #04B456;
+    float: right;
+    border: 2px solid #04B456;
+    border-radius: 25px;
+    margin: 5px 10px 0 0;
+    line-height: 23px;
+    background-color: #fff;
+    float: right;
+  }
+
+  .state2 {
+    text-align: center;
+    width: 18vw;
+    height: 25px;
+    font-size: 12px;
+    color: #949494;
+    float: right;
+    border: 2px solid #949494;
+    border-radius: 25px;
+    margin: 5px 10px 0 0;
+    line-height: 23px;
+    background-color: #fff;
+    float: right;
+  }
+
+  .state3 {
+    text-align: center;
+    width: 18vw;
+    height: 25px;
+    font-size: 12px;
+    color: #000000;
+    float: right;
+    border: 2px solid #000000;
+    border-radius: 25px;
+    margin: 5px 10px 0 0;
+    line-height: 23px;
+    background-color: #fff;
+    float: right;
+  }
+
+  .isClick {
+    color: #04B456 !important;
+    border: #04B456 !important;
+  }
+</style>
+

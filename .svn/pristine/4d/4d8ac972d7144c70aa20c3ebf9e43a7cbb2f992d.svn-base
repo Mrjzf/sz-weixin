@@ -1,0 +1,99 @@
+<template>
+  <div id="top">
+    <header>
+      <img src="../../assets/images/logo.png" alt="" id="logo">
+
+      <!--去搜索页面-->
+      <div type="text" id="search" @click="goSearch();">搜索</div>
+      <!--<span class="icon-chs_sywx_ic_history" @click="getHistory"></span>-->
+      <span class="icon-chs_sywx_ic_search" @click="goSearch();"></span>
+    </header>
+  </div>
+</template>
+
+<script>
+  export default {
+    data(){
+      return {}
+    },
+    methods: {
+      getHistory() {
+        if (this.$store.state.openid == -1 || this.$store.state.openid == 0 || this.$store.state.openid == undefined) {
+          alert("请先登录！");
+          return
+        }
+      },
+      goSearch() {
+        this.$router.push({path: "/search"});
+      }
+    }
+  }
+</script>
+
+<style scoped>
+
+  #top {
+    width: 100%;
+    position: fixed;
+    z-index: 100;
+    top: 0;
+  }
+
+  header {
+    width: 100%;
+    height: 50px;
+    background-color: #FF3E05;
+    overflow: hidden;
+    position: relative;
+  }
+
+  #recommend {
+    margin-bottom: 50px;
+  }
+
+  #logo {
+    width: 80px;
+    position: absolute;
+    top: 50%;
+    transform: translateY(-11.4px);
+    margin: 0 0 0 12px;
+    float: left;
+  }
+
+  #search {
+    position: absolute;
+    width: 55vw;
+    height: 36px;
+    line-height: 36px;
+    border-radius: 5px;
+    top: 50%;
+    left: 50%;
+    margin: 0 0 0 15px;
+    transform: translateY(-18px) translateX(-25vw);
+    text-align: center;
+    font-size: 14px;
+    background-color: #fff;
+    color: #8f8f8f;
+    /*box-shadow: inset 0px 0px 5px 1px #696969;*/
+  }
+
+  .icon-chs_sywx_ic_search {
+    display: block;
+    position: absolute;
+    width: 10vw;
+    height: 8vw;
+    font-size: 26px;
+    color: #fff;
+    float: right;
+    left: 87%;
+    top: 50%;
+    text-align: center;
+    line-height: 9vw;
+    transform: translateY(-4.25vw);
+    border-radius: 6px;
+    background-color: #ff3e05;
+    /*box-shadow: 0px 0px 5px 2px #fff;*/
+    /*border: 1px solid #fff;*/
+  }
+
+</style>

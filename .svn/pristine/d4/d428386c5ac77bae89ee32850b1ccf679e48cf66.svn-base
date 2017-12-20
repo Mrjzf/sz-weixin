@@ -1,0 +1,525 @@
+<template>
+  <div class="templ">
+    <header>
+      <p>{{type}}</p>
+      <span @click="goback" class="icon-chs_sywx_ic_jt_left"></span>
+      <!--有分享菜单-->
+      <span class="icon-chs_sywx_ic_detail_share"></span>
+      <!--收藏-->
+      <span class="icon-chs_sywx_ic_detail_like"></span>
+    </header>
+
+
+    <!--影片详情-->
+    <div id="detail">
+      <figure>
+        <img src="../../assets/xiangqing.png"  />
+        <figcaption>
+          <h1>{{name}}</h1>
+          <h2>年份：{{year}}</h2>
+          <h2>地区：{{area}}</h2>
+          <h2>类型：{{type}}</h2>
+          <button id="forTv">
+            <span class="icon-chs_sywx_ic_detail_tp"></span>
+            电视观看
+          </button>
+          <button id="forPhone">
+            <span class="icon-chs_sywx_ic_detail_phone"></span>
+            手机观看
+          </button>
+        </figcaption>
+      </figure>
+    </div>
+
+
+    <!--简介-->
+    <div id="intro">
+      <h1>
+        简介
+        <div class="leftBorder"></div>
+        <span class="icon-chs_sywx_ic_my_jt"></span>
+      </h1>
+      <div class="label">
+        <!--v-for循环-->
+        <button v-for="item in label">{{item}}</button>
+      </div>
+      <p>{{intro}}</p>
+    </div>
+
+
+    <!--剧集-->
+    <div id="episode">
+    <h1>
+      剧集
+      <div class="leftBorder"></div>
+    </h1>
+    <div class="number">
+      <button v-for="n in episode" :class="{numberSelect:n==1}">{{n}}</button>
+    </div>
+    </div>
+
+
+    <!--推荐-->
+    <div id="recommend">
+      <h1>
+        为您推荐
+        <div class="leftBorder"></div>
+        <button>换一批</button>
+      </h1>
+      <!--v-for循环-->
+      <div class="recommend-content">
+        <figure v-for="(item,index) in recommend" :class="{threeRecommend
+        :index==0||index==1||index==2}">
+          <img src="../../assets/tuijian.png" />
+          <h2>{{item}}</h2>
+        </figure>
+      </div>
+    </div>
+
+
+    <!--评论-->
+    <section>
+      <div class="comment">
+        评论{{commentNum | formatCommentNum}}
+        <div id="dash"></div>
+      </div>
+      <div class="input">
+        <input placeholder="我也来说几句..."/>
+        <span class="icon-chs_sywx_ic_detail_news"></span>
+      </div>
+
+      <!--这里用v-for输出数据-->
+      <ul>
+        <li v-for="item in comments">
+          <img src="../../assets/touxiang.png" />
+          <h2>{{item.user}}<span>{{item.date}}</span></h2>
+          <h1>{{item.content}}</h1>
+          <h3>{{item.index | formatFloor}}</h3>
+          <p>回复</p>
+          <span class="icon-chs_sywx_ic_detail_news"></span>
+        </li>
+      </ul>
+    </section>
+
+
+    <!--评论结束-->
+    <div id="end">
+      <p>评论看完了，来一发吧！</p>
+    </div>
+
+
+  </div>
+</template>
+
+<script>
+
+export default {
+  data: function () {
+      return {
+        type:'综艺',
+        name:'王牌对王牌',
+        year:'2016',
+        area:'中国',
+        label:['刘老根导演','刘老根','刘老根'],
+        intro:'由赵本山、谢晓嵋执导，赵本山、范伟、高秀敏、李静等领衔主演的喜剧。该剧主要讲述德高...',
+        episode:10,
+        recommend:['花千骨','奔跑吧兄弟','刘老根','刘罗锅'],
+        commentNum:5,
+        comments:[
+          {content:'我是评论我是评论', index:1, user:'小样', date:'4月22日'},
+          {content:'我不同意楼主观点', index:2, user:'小样', date:'4月22日'},
+          {content:'我就看看不说话', index:3, user:'小样', date:'4月22日'},
+          {content:'好复杂...', index:4, user:'小样', date:'4月22日'},
+        ],
+        tolivehead:3
+      }
+  },
+  filters:{
+    formatCommentNum:function (num) {
+      return '('+num+'条'+')';
+    },
+    formatFloor:function (num) {
+      return num+'层';
+    }
+  },
+  methods: {
+    goback:function () {
+      this.$router.go(-1);
+    }
+  }
+};
+
+</script>
+
+<style scoped>
+
+h1,h2,p{
+  margin:0;
+  line-height:100%;
+}
+figure{
+  margin:0;
+  padding: 0;
+}
+img{
+  display: block;
+  max-width:100%;
+}
+
+/*头部*/
+header{
+  background-color: #FF3E05;
+  height:48px;
+  position: relative;
+}
+header p{
+  font-family: "Microsoft Yahei";
+  font-size:17px;
+  text-align:center;
+  color:#fff;
+  padding:16px 0 0 0;
+}
+.icon-chs_sywx_ic_jt_left,.icon-chs_sywx_ic_detail_share,.icon-chs_sywx_ic_detail_like{
+  font-size:20px;
+  color:#fff;
+}
+.icon-chs_sywx_ic_jt_left{
+  position: absolute;
+  left:4.5%;
+  top:14px;
+}
+.icon-chs_sywx_ic_detail_share{
+  position: absolute;
+  right:16%;
+  top:14px;
+}
+.icon-chs_sywx_ic_detail_like{
+  position: absolute;
+  right:4.5%;
+  top:14px;
+}
+
+
+/* 影片详情 */
+#detail figure{
+  background-color: #fff;
+  padding:16px 0 0 4.5%;
+  margin:0 0 8px 0;
+  height:184px;
+}
+#detail img{
+  float: left;
+}
+#detail figcaption{
+  width:58%;
+  height:149px;
+  margin-left:4.5%;
+  float:left;
+  position: relative;
+}
+#detail figure:after{
+  height:0;
+  content:'.';
+  display:block;
+  clear:both;
+  visibility: hidden;
+}
+#detail figcaption h1{
+  font-size:17px;
+  font-family: "Microsoft Yahei";
+  color:#FF3E05;
+  margin-bottom: 14px;
+
+}
+#detail figcaption h2{
+  font-size:14px;
+  font-family: "Microsoft Yahei";
+  color:#999;
+  margin-bottom: 8px;
+}
+#detail figcaption button{
+  padding: 0;
+  color:#fff;
+  width:45%;
+  height:36px;
+  border-radius: 3px;
+  border:0;
+  text-align: center;
+  font-size:13px;
+  font-family: "Microsoft Yahei";
+}
+#detail figcaption button#forTv{
+  background-color: #FF3E05;
+  position: absolute;
+  bottom: 0;
+}
+#detail figcaption button#forPhone{
+  background-color: #00C72E;
+  position: absolute;
+  bottom: 0;
+  left:50%;
+}
+#detail figcaption button span{
+  font-size:14px;
+}
+
+
+/*简介  */
+/*这边有个bug,去掉边框h1掉下去,所以加个白色边框*/
+#intro{
+  border:1px solid #fff;
+  background-color:#fff;
+  height:127px;
+  margin:0 0 8px 0;
+}
+#intro h1{
+  font-size: 16px;
+  font-family: "Microsoft Yahei";
+  color:#3C3C3C;
+  padding-left:8px;
+  margin:12px 0 0 4.5%;
+  position: relative;
+}
+.leftBorder{
+  width:3px;
+  height:16px;
+  border-radius: 2px;
+  background-color: #FF3E05;
+  position: absolute;
+  top:0;
+  left:0;
+}
+.icon-chs_sywx_ic_my_jt{
+  font-size:15px;
+  color: #d5d5d5;
+  position: absolute;
+  top:0px;
+  right:4.5%;
+}
+#intro .label{
+  margin-top:8px;
+  border-top:1px solid #eee;
+  padding-top: 9px;
+}
+#intro .label button{
+  border-radius: 0;
+  margin-left:4.5%;
+  height:30px;
+  color:#3C3C3C;
+  font-family: "Microsoft Yahei";
+  font-size:14px;
+}
+#intro p{
+  padding:9px 0 0 4.5%;
+  color:#979797;
+  font-family: "Microsoft Yahei";
+  font-size:14px;
+  line-height:1.3;
+}
+
+/*剧集  */
+/*高度自适应,由集数决定，每行值显示5集*/
+/*这边有个bug,去掉边框h1掉下去,所以加个白色边框*/
+#episode{
+  border:1px solid #fff;
+  background-color:#fff;
+  margin:0 0 8px 0;
+}
+#episode h1{
+  font-size: 16px;
+  font-family: "Microsoft Yahei";
+  color:#3C3C3C;
+  padding-left:8px;
+  margin:12px 0 0 4.5%;
+  position: relative;
+}
+#episode .number{
+  text-align:center;
+  margin-top:8px;
+  border-top:1px solid #eee;
+  padding-top: 9px;
+}
+#episode .number button{
+  padding: 0;
+  margin:0 2% 9px 4.5%;
+  border-radius:0;
+  height:30px;
+  width:11.1%;
+}
+#episode .numberSelect{
+  border-color:#FF3E05;
+}
+
+/*为您推荐  */
+#recommend{
+  border:1px solid #fff;
+  background-color:#fff;
+  height:170px;
+  margin:0 0 8px 0;
+}
+#recommend h1{
+  font-size: 16px;
+  font-family: "Microsoft Yahei";
+  color:#3C3C3C;
+  padding-left:8px;
+  margin:12px 0 0 4.5%;
+  position: relative;
+}
+#recommend h1 button{
+  padding:0;
+  width:51px;
+  height:18px;
+  border-radius:8px;
+  font-size: 13px;
+  color:#dddddd;
+  font-family: "Microsoft Yahei";
+  position: absolute;
+  right:4.5%;
+  line-height: 100%;
+}
+#recommend .recommend-content{
+  border-top:1px solid #eee;
+  margin:12px 3% 0 4.5%;
+  padding-top:16px;
+}
+#recommend .recommend-content figure{
+  display:inline-block;
+  width:23.3%;
+
+}
+#recommend .recommend-content h2{
+  font-size: 13px;
+  color:#979797;
+  font-family: "Microsoft Yahei";
+  padding-top:8px;
+  text-align:center;
+}
+/*前三个右边留空*/
+.threeRecommend{
+  margin-right:2.2%;
+}
+
+
+/*评论*/
+section{
+  background-color: #fff;
+}
+/*评论条数  */
+section .comment{
+  position: relative;
+  height:41px;
+  font-size:16px;
+  font-family: "Microsoft YaHei";
+  color:#3C3C3C;
+  line-height:41px;
+  padding-left: 20px;
+  border-bottom: 1px solid #eee;
+}
+section .comment #dash{
+  width:4px;
+  height:19px;
+  background-color:#FF3E05;
+  position: absolute;
+  left:8px;
+  top:11px;
+  border-radius: 4px;
+}
+/*输入框*/
+section .input{
+  height:72px;
+  text-align: center;
+  line-height: 72px;
+  border-bottom: 1px solid #eee;
+  position: relative;
+}
+section input{
+  border: 0;
+  background-color: #F3F3F3;
+  width:296px;
+  height:41px;
+  color:#222222;
+  font-size:13px;
+  font-family: "Microsoft Yahei";
+  text-align:center;
+}
+section input::-webkit-input-placeholder{
+  color:#979797;
+  font-size:13px;
+  font-family: "Microsoft Yahei";
+}
+/*怎么保证这个图标离字的距离保持一定*/
+section .input .icon-chs_sywx_ic_detail_news{
+  font-size:17px;
+  color:#979797;
+  position: absolute;
+  left:31%;
+  top:30px;
+}
+section li{
+  position: relative;
+  height:62px;
+  border-bottom: 1px solid #eee;
+}
+section li img{
+  border-radius: 50%;
+  position:absolute;
+  left:17px;
+  top:15px;
+}
+section li h2{
+  margin:0;
+  padding-left:55px;
+  padding-top: 13px;
+  font-size:12px;
+  color:#979797;
+  font-family: "Microsoft YaHei";
+}
+section li h2 span{
+  font-size:11px;
+  padding-left: 8px;
+}
+section li h1{
+  margin:0;
+  padding-top: 9px;
+  padding-left: 55px;
+  font-size:15px;
+  color:#000000;
+  font-family: "Microsoft YaHei";
+}
+section li h3{
+  margin:0;
+  position: absolute;
+  right:15px;
+  top:16px;
+  font-size:12px;
+  color:#979797;
+  font-family: "Microsoft YaHei";
+}
+section li p{
+  color:#FF3E05;
+  font-size:12px;
+  font-family: "Microsoft Yahei";
+  position: absolute;
+  right:3%;
+  bottom:9px;
+}
+section li .icon-chs_sywx_ic_detail_news{
+  color:#FF3E05;
+  font-size:12px;
+  font-family: "Microsoft Yahei";
+  position: absolute;
+  right:10.5%;
+  bottom: 8px;
+}
+#end{
+  height:48px;
+  background-color: #fff;
+}
+#end p{
+  font-size: 15px;
+  font-family: "Microsoft Yahei";
+  color:#000;
+  text-align:center;
+  line-height:48px;
+}
+</style>

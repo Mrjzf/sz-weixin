@@ -1,0 +1,94 @@
+import wx from 'weixin-js-sdk'
+import Vue from 'vue'
+
+export default {
+  isReady: false,
+  tmpEve:[],
+  weixin() {
+    var url = "/cms/thirdPartyPortalInterface/doWeiXinGetSign.service?url=" + window.location.href.replace("&", "%26");
+
+    Vue.http.get(url).then(res => {
+      var data = res.body;
+
+      this.wxConfig(data.appid, data.timestamp, data.nonceStr, data.signature);
+
+    }, res => {
+      console.log("错误!");
+    })
+
+  },
+  wxConfig(_appid, _timestamp, _nonceStr, _signature) {
+    wx.config({
+      debug: false,
+      appId: _appid,
+      timestamp: _timestamp,
+      nonceStr: _nonceStr,
+      signature: _signature,
+      jsApiList: [
+        'onMenuShareTimeline',
+        'onMenuShareAppMessage',
+        'onMenuShareQQ',
+        'onMenuShareQZone',
+        'showOptionMenu',
+        'scanQRCode',
+        'startRecord',
+        'stopRecord',
+        'translateVoice',
+        'chooseImage',
+        'uploadImage',
+        'downloadImage'
+      ]
+    })
+
+    var _self = this;
+
+    wx.ready(function (res) {
+
+      wx.showOptionMenu();
+
+      this.isReady = true;
+      if(_self.tmpEve.length>0){
+        for(var _inx in _self.tmpEve){
+           var _v=_self.tmpEve[_inx];
+           for(var _k in _v){
+             wx[_k](_v[_k]);
+           }
+        }
+      };
+      _self.tmpEve=[];
+
+    })
+    wx.error(function (res) {
+      // alert(res);
+    })
+  },
+  onMenuShareTimeline(v){
+    if (this.isReady) {
+      wx.onMenuShareTimeline(v)
+    } else {
+      this.tmpEve.push({"onMenuShareTimeline":v});
+    }
+  },
+  onMenuShareAppMessage(v){
+    if (this.isReady) {
+      wx.onMenuShareAppMessage(v)
+    } else {
+      this.tmpEve.push({"onMenuShareAppMessage":v});
+
+    }
+  },
+  onMenuShareQQ(v){
+    if (this.isReady) {
+      wx.onMenuShareQQ(v)
+    } else {
+      this.tmpEve.push({"onMenuShareQQ":v});
+    }
+  },
+  onMenuShareQZone(v){
+    if (this.isReady) {
+      wx.onMenuShareQZone(v)
+    } else {
+      this.tmpEve.push({"onMenuShareQZone":v});
+    }
+  }
+}

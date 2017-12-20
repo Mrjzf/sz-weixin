@@ -1,0 +1,143 @@
+<template>
+  <div id="recommend3">
+
+    <header>
+      <span class="icon-chs_sywx_ic_live"></span>
+      <p>{{ fromReacommend }}</p>
+      <p id="more">更多 ></p>
+    </header>
+
+    <div>
+      <div class="everyBlock" v-for="(item, index) in recommend3List">
+        <img :src="item.imgUrl" alt="">
+        <p class="name">{{item.name}}</p>
+      </div>
+    </div>
+
+  </div>
+</template>
+
+<script>
+  import img1 from '@/assets/images/31.png'
+  import img2 from '@/assets/images/32.png'
+  import img3 from '@/assets/images/33.png'
+
+  import img4 from '@/assets/images/41.png'
+  import img5 from '@/assets/images/42.png'
+  import img6 from '@/assets/images/43.png'
+
+  import img7 from '@/assets/images/51.png'
+  import img8 from '@/assets/images/52.png'
+  import img9 from '@/assets/images/53.png'
+
+  export default {
+    data(){
+      return {
+        recommend3List: [],
+        recommend3List1: [
+          {imgUrl: img1, name: "最萌身高差"},
+          {imgUrl: img2, name: "音乐之声（国语）"},
+          {imgUrl: img3, name: "湄公河行动"},
+          {imgUrl: img1, name: "最萌身高差"},
+          {imgUrl: img2, name: "音乐之声（国语）"},
+          {imgUrl: img3, name: "湄公河行动"}
+        ],
+        recommend3List2: [
+          {imgUrl: img4, name: "大秦帝国崛起"},
+          {imgUrl: img5, name: "爱的追踪"},
+          {imgUrl: img6, name: "黎明决战"},
+          {imgUrl: img4, name: "大秦帝国崛起"},
+          {imgUrl: img5, name: "爱的追踪"},
+          {imgUrl: img6, name: "黎明决战"}
+        ],
+        recommend3List3: [
+          {imgUrl: img7, name: "今晚80脱口秀"},
+          {imgUrl: img8, name: "养生堂"},
+          {imgUrl: img9, name: "我们十七岁"},
+          {imgUrl: img7, name: "今晚80脱口秀"},
+          {imgUrl: img8, name: "养生堂"},
+          {imgUrl: img9, name: "我们十七岁"}
+        ]
+      }
+    },
+    props: ['fromReacommend'],
+    mounted(){
+      this.whichWay(this.fromReacommend);
+    },
+    methods: {
+      whichWay(fromReacommend){
+        if (fromReacommend == "高清电影推荐") {
+          this.recommend3List = this.recommend3List1;
+        } else if (fromReacommend == "高清剧集推荐") {
+          this.recommend3List = this.recommend3List2;
+        } else if (fromReacommend == "综合高清推荐") {
+          this.recommend3List = this.recommend3List3;
+        }
+      }
+    }
+  }
+</script>
+
+<style scoped>
+  * {
+    margin: 0;
+    padding: 0;
+  }
+  img {
+    width: 100%;
+  }
+  #recommend3 {
+    /*width: 100%;*/
+    background-color: #fff;
+    padding: 8px;
+    margin-top: 8px;
+    overflow: hidden;
+  }
+
+  header {
+    width: 100%;
+    height: 40px;
+    border-bottom: 1px solid #dfdfdf;
+    margin-bottom: 8px;
+  }
+  .icon-chs_sywx_ic_live {
+    font-size: 25px;
+    line-height: 40px;
+    color: #FF3E05;
+    float: left;
+  }
+  header p {
+    float: left;
+    height: 40px;
+    line-height: 40px;
+    color: #3C3C3C;
+    font-size: 16px;
+    margin-left: 8px;
+  }
+  #more {
+    float: right;
+    font-size: 14px;
+    color: #a6a6a6;
+  }
+
+  /*每小块*/
+  .everyBlock {
+    width: 32%;
+    float: left;
+    margin-right: 2%;
+  }
+  .everyBlock:nth-child(3n) {
+    margin-right: 0;
+  }
+  .name {
+    width: 100%;
+    clear: both;
+    white-space:nowrap;
+    text-overflow:ellipsis;
+    overflow:hidden;
+    font-size: 14px;
+    margin: 4px 0 4px 0;
+    text-align: center;
+    color: #212121;
+  }
+</style>

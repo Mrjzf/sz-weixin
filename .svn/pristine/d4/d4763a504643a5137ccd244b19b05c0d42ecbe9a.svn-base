@@ -1,0 +1,588 @@
+<template>
+  <div id="app">
+
+    <router-view @send="sendMsg"></router-view>
+
+    <img id="small_RC" src="./assets/images/poplayer_remote@3x.png" alt="" v-show="$store.state.isSmallRCshow"
+         @touchmove.prevent="touchmove" @click="changeRCmark">
+
+    <div id="smallRC_UI" v-show="this.$store.state.isRCshow" @click="changeRCmark"></div>
+
+    <div class="UI_top" v-show="this.$store.state.isRCshow">
+      <img class="up" :src="jiantouUp" alt="" @touchstart="changejiantou('up')" @touchend="changejiantou('up')"
+           @click="sendMsg('KEY_UP');">
+      <img class="down" :src="jiantouDown" alt="" @touchstart="changejiantou('down')" @touchend="changejiantou('down')"
+           @click="sendMsg('KEY_DOWN');">
+
+      <div :class="okCss" @touchstart="changeOK" @touchend="changeOK" @click="sendMsg('KEY_OK');">
+        OK
+      </div>
+
+      <img class="left" :src="jiantouLeft" alt="" @touchstart="changejiantou('left')" @touchend="changejiantou('left')"
+           @click="sendMsg('KEY_LEFT');">
+      <img class="right" :src="jiantouRight" alt="" @touchstart="changejiantou('right')"
+           @touchend="changejiantou('right')" @click="sendMsg('KEY_RIGHT');">
+    </div>
+
+    <div :class="yaokongCss" v-show="this.$store.state.isRCshow" @touchstart="changeyaokong" @touchend="changeyaokong"
+         @click="goRC">
+      遥控器
+    </div>
+
+    <div id="download" v-show="downloadTips">
+      <div id="download_tips">
+        <div class="msg">
+          在苏州云媒体APP中登录观看!
+        </div>
+        <span class="lineX"></span>
+        <span class="lineY"></span>
+        <p id="yes" @click="openApp();">打开</p>
+        <p id="no" @click="no();">取消</p>
+      </div>
+    </div>
+
+    <nav class="mui-bar mui-bar-tab" v-show="$store.state.isAppShow">
+      <template v-for="(item, index) in navList">
+        <router-link class="mui-tab-item" :to="item.path" @click.native="changeActive(index)">
+          <span :class="item.classN"></span>
+          <span class="mui-tab-label">{{item.name}}</span>
+        </router-link>
+      </template>
+    </nav>
+
+  </div>
+</template>
+
+<script>
+
+  import jiantou1 from '@/assets/images/remote_icon_1_n.png'
+  import jiantou2 from '@/assets/images/remote_icon_1_s.png'
+  import Share from './service/share'
+  import Client from './service/client'
+  import {Toast} from 'mint-ui';
+  import wx from 'weixin-js-sdk'
+
+  export default {
+    name: 'app',
+    data: function () {
+      return {
+        toast: null,
+        isActive: 0,
+        navList: [
+          {name: "推荐", classN: "mui-icon icon-chs_sywx_ic_home", path: "/Recommend"},
+          {name: "直播", classN: "mui-icon icon-chs_sywx_ic_living", path: "/live/Channel"},
+          {name: "点播", classN: "mui-icon icon-chs_sywx_ic_vod", path: "/VOD?id=9511&index=0"},
+          {name: "遥控器", classN: "mui-icon icon-chs_sywx_ic_rc", path: "/RC"},
+          {name: "我的", classN: "mui-icon icon-chs_sywx_ic_my", path: "/my"},
+        ],
+        moveX: 0,
+        moveY: 0,
+        startX: 0,
+        startY: 0,
+        endX: 0,
+        endY: 0,
+        allWidth: window.screen.availWidth,
+        jiantouUp: jiantou1,
+        jiantouDown: jiantou1,
+        jiantouLeft: jiantou1,
+        jiantouRight: jiantou1,
+        okCss: "ok",
+        yaokongCss: "UI_bottom",
+        isRCshow: false,
+        connection: null,
+        downloadTips: false
+      }
+    },
+    methods: {
+      changeActive(index) {
+        this.$store.commit("appIndex", index);
+        if (index == 2) {
+          this.$store.commit("VODindex", 0);
+        }
+      },
+      touchmove(e) {
+        this.moveX = e.changedTouches[0].clientX - (this.allWidth * 0.15 / 2);
+        this.moveY = e.changedTouches[0].clientY - (this.allWidth * 0.15 / 2);
+        if (this.moveX <= 0) {
+          this.moveX = 0;
+        }
+        if (this.moveX >= (document.body.clientWidth - e.target.offsetWidth)) {
+          this.moveX = document.body.clientWidth - e.target.offsetWidth;
+        }
+        if (this.moveY <= 0) {
+          this.moveY = 0;
+        }
+        if (this.moveY >= window.innerHeight - e.target.offsetHeight) {
+          this.moveY = window.innerHeight - e.target.offsetHeight;
+        }
+
+        var rc = e.target;
+        rc.style.left = this.moveX + "px";
+        rc.style.top = this.moveY + "px";
+      },
+      changejiantou(dir) {
+        if (dir == "up") {
+          this.jiantouUp = this.jiantouUp == jiantou1 ? jiantou2 : jiantou1;
+        }
+        else if (dir == "down") {
+          this.jiantouDown = this.jiantouDown == jiantou1 ? jiantou2 : jiantou1;
+        }
+        else if (dir == "left") {
+          this.jiantouLeft = this.jiantouLeft == jiantou1 ? jiantou2 : jiantou1;
+        }
+        else if (dir == "right") {
+          this.jiantouRight = this.jiantouRight == jiantou1 ? jiantou2 : jiantou1;
+        }
+      },
+      changeOK() {
+        this.okCss = this.okCss == "ok" ? "ok_word" : "ok";
+      },
+      changeyaokong() {
+        this.yaokongCss = this.yaokongCss == "UI_bottom" ? "UI_bottom2" : "UI_bottom";
+      },
+      changeRCmark() {
+        this.$store.commit("isRCshow", !this.$store.state.isRCshow);
+        this.$store.commit("isSmallRCshow", !this.$store.state.isSmallRCshow);
+      },
+      goRC() {
+        if (this.$store.state.openid == 0 || this.$store.state.openid == undefined || this.$store.state.openid == -1) {
+          this.sendMsg("other");
+        } else {
+          this.$store.commit("isRCshow", !this.$store.state.isRCshow);
+          this.$store.commit("isSmallRCshow", false);
+          if (this.$store.state.STBid == "") {
+            this.$store.commit("isSmallRCshow", true);
+            this.$router.push({path: "/STB_list"});
+            alert("请先绑定机顶盒！");
+            return
+          }
+          this.$router.push({path: "/RC"});
+        }
+      },
+      sendMsg(msg, o) {
+        var _vue = this;
+        Client.sendMsg(msg, o, function (s) {
+          if (s == Client.status.openid_err) {
+            _vue.downloadTips = true;
+          }
+        })
+      },
+      goDownLoad() {
+        window.location.href = "http://dp2.sz96296.com:8091/download/index.html";
+      },
+      no() {
+        this.downloadTips = false;
+      },
+      openApp() {
+        if (this.$route.query.from == "mobile") {
+          var id = this.$route.query.channelId,
+            assetid = this.$route.query.assetId;
+
+          if (/android/i.test(navigator.userAgent) || navigator.userAgent.toLowerCase().indexOf("iphone") != -1) {
+            var isrefresh = this.$route.query.refresh; // 获得refresh参数
+            if (isrefresh == 1) {
+              window.location.href = "http://dp2.sz96296.com:8091/download/index.html";
+              return
+            }
+            var host = "suzhou.live";
+
+            var androidUrl_zhibo = "chssuzhou://" + host + "/message?id=" + id;   //频道id
+            var androidUrl_huikan = "chssuzhou://" + host + "/message?id=" + id + "," + assetid;
+
+            var _ios = 'com.dmx.suzhou.iphone://params?id=' + id;
+
+            var _android = assetid == undefined ? androidUrl_zhibo : androidUrl_huikan;
+
+            window.location.href = navigator.userAgent.toLowerCase().indexOf("iphone") != -1 ? _ios : _android;
+
+            if (/android/i.test(navigator.userAgent)) {
+              window.setTimeout(function () {
+                window.location.href += ( window.location.href.indexOf("?") != -1 ? "&" : "?") + 'refresh=1';
+              }, 700);
+            } else {
+              setTimeout(function () {
+                window.location.href = 'itms-apps://itunes.apple.com/cn/app/su-zhou-yun-mei-tiiphone-ban/id859791489?mt=8'
+              }, 700);
+            }
+          } else {
+            window.location.href = "http://dp2.sz96296.com:8091/download/index.html";
+          }
+        } else {
+          this.goDownLoad();
+        }
+      }
+    },
+    filters: {
+      isActive(v1, v2, v3){
+        return v2 == v3 ? v1 + "_s" : v1;
+      },
+      isrouterlink(v1, v2, v3){
+        return v2 == v3 ? v1 + " mui-active" : v1;
+      }
+    },
+    watch: {
+      "$route": function () {
+        if (this.$route.path != "detail" && this.$route.path != "/live/liveHead") {
+          alert(this.$route.path);
+          Share.onMenuShareTimeline({
+            title: "我正在看苏州有线微信电视",
+            link: "http://wxtv1.sz96296.com/wxtv/#/Recommend",   //http://wxtv1.chsvision.com/wxtv/#/Recommend
+            imgUrl: 'https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1498053089304&di=c16344e7decb8004e7b06eb23eac259a&imgtype=0&src=http%3A%2F%2Fimg.25pp.com%2Fuploadfile%2Fapp%2Ficon%2F20160202%2F1454373232648196.jpg',
+            success: function () {
+
+            },
+            cancel: function () {
+            }
+          });
+          Share.onMenuShareAppMessage({
+            title: '我正在看苏州有线微信电视', // 分享标题
+            desc: '快和我一起看苏州有线微信电视吧~~', // 分享描述
+            link: 'http://wxtv1.sz96296.com/wxtv/#/Recommend', // 分享链接，该链接域名或路径必须与当前页面对应的公众号JS安全域名一致
+            imgUrl: 'https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1498053089304&di=c16344e7decb8004e7b06eb23eac259a&imgtype=0&src=http%3A%2F%2Fimg.25pp.com%2Fuploadfile%2Fapp%2Ficon%2F20160202%2F1454373232648196.jpg', // 分享图标
+            type: '', // 分享类型,music、video或link，不填默认为link
+            dataUrl: '', // 如果type是music或video，则要提供数据链接，默认为空
+            success: function () {
+              // 用户确认分享后执行的回调函数
+            },
+            cancel: function () {
+              // 用户取消分享后执行的回调函数
+            }
+          })
+          Share.onMenuShareQQ({
+            title: '我正在看苏州有线微信电视', // 分享标题
+            desc: '快和我一起看苏州有线微信电视吧~~', // 分享描述
+            link: 'http://wxtv1.sz96296.com/wxtv/#/Recommend', // 分享链接
+            imgUrl: 'https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1498053089304&di=c16344e7decb8004e7b06eb23eac259a&imgtype=0&src=http%3A%2F%2Fimg.25pp.com%2Fuploadfile%2Fapp%2Ficon%2F20160202%2F1454373232648196.jpg', // 分享图标
+            success: function () {
+              // 用户确认分享后执行的回调函数
+            },
+            cancel: function () {
+              // 用户取消分享后执行的回调函数
+            }
+          })
+          Share.onMenuShareQZone({
+            title: '我正在看苏州有线微信电视', // 分享标题
+            desc: '快和我一起看苏州有线微信电视吧~~', // 分享描述
+            link: 'http://wxtv1.sz96296.com/wxtv/#/Recommend', // 分享链接
+            imgUrl: 'https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1498053089304&di=c16344e7decb8004e7b06eb23eac259a&imgtype=0&src=http%3A%2F%2Fimg.25pp.com%2Fuploadfile%2Fapp%2Ficon%2F20160202%2F1454373232648196.jpg', // 分享图标
+            success: function () {
+              // 用户确认分享后执行的回调函数
+            },
+            cancel: function () {
+              // 用户取消分享后执行的回调函数
+            }
+          })
+        }
+      }
+    },
+    created(){
+      Client.created();
+      Share.weixin();
+    },
+    mounted() {
+
+    },
+    updated(){
+
+    }
+  }
+
+
+</script>
+
+<style>
+
+  #small_RC {
+    width: 15%;
+    position: fixed;
+    top: 75%;
+    left: 5%;
+    z-index: 999;
+    opacity: 1;
+  }
+
+  #smallRC_UI {
+    width: 100%;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0);
+    position: fixed;
+    top: 0;
+    z-index: 999;
+  }
+
+  .UI_top {
+    width: 90%;
+    height: 60vh;
+    background: rgba(0, 0, 0, .8);
+    position: fixed;
+    z-index: 9999;
+    top: 13%;
+    left: 50%;
+    transform: translateX(-50%);
+    border-radius: 3vw;
+  }
+
+  .UI_top img {
+    width: 10vw;
+  }
+
+  .UI_top .up {
+    position: absolute;
+    top: 10vw;
+    left: 50%;
+    transform: translateX(-5vw) rotate(90deg);
+  }
+
+  .UI_top .down {
+    position: absolute;
+    bottom: 10vw;
+    left: 50%;
+    transform: translateX(-5vw) rotate(-90deg);
+  }
+
+  .UI_top .ok {
+    width: 30vw;
+    height: 30vw;
+    border: 1vw solid #04b456;
+    border-radius: 30vw;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translateX(-16vw) translateY(-16vw);
+    font-size: 10vw;
+    color: white;
+    text-align: center;
+    line-height: 30vw;
+  }
+
+  .ok_word {
+    width: 30vw;
+    height: 30vw;
+    border: 1vw solid #04b456;
+    border-radius: 30vw;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translateX(-16vw) translateY(-16vw);
+    font-size: 10vw;
+    color: #04b456;
+    text-align: center;
+    line-height: 30vw;
+  }
+
+  .UI_top .left {
+    position: absolute;
+    top: 50%;
+    left: 10vw;
+    transform: translateY(-5vw);
+  }
+
+  .UI_top .right {
+    position: absolute;
+    top: 50%;
+    right: 10vw;
+    transform: translateY(-5vw) rotate(180deg);
+  }
+
+  .UI_bottom {
+    width: 90%;
+    height: 10vh;
+    background: rgba(0, 0, 0, .8);
+    position: fixed;
+    bottom: 13%;
+    left: 50%;
+    transform: translateX(-50%);
+    border-radius: 3vw;
+    color: white;
+    font-size: 6vw;
+    text-align: center;
+    line-height: 10vh;
+    z-index: 9999;
+  }
+
+  .UI_bottom2 {
+    width: 90%;
+    height: 10vh;
+    background: rgba(0, 0, 0, .8);
+    position: fixed;
+    bottom: 13%;
+    left: 50%;
+    transform: translateX(-50%);
+    border-radius: 3vw;
+    color: #04b456;
+    font-size: 6vw;
+    text-align: center;
+    line-height: 10vh;
+    z-index: 9999;
+  }
+
+  #download {
+    width: 100%;
+    height: 100vh;
+    position: fixed;
+    top: 0;
+    background: rgba(0, 0, 0, 0.3);
+    z-index: 1000;
+  }
+
+  #download_tips {
+    width: 70vw;
+    height: 45vw;
+    background-color: #fff;
+    position: fixed;
+    z-index: 9999;
+    top: 50%;
+    left: 50%;
+    transform: translateX(-35vw) translateY(-25vw);
+  }
+
+  #download_tips .msg {
+    width: 100%;
+    height: 32vw;
+    text-align: center;
+    line-height: 32vw;
+    font-size: 16px;
+  }
+
+  #download_tips .lineX {
+    display: block;
+    width: 100%;
+    height: 1px;
+    background-color: #c3c3c3;
+    position: absolute;
+    bottom: 13vw;
+  }
+
+  #download_tips .lineY {
+    display: block;
+    width: 13vw;
+    height: 1px;
+    background-color: #c3c3c3;
+    position: absolute;
+    bottom: 6.5vw;
+    left: 28.5vw;
+    transform: rotate(90deg);
+  }
+
+  #download_tips p {
+    float: left;
+    width: 35vw;
+    height: 13vw;
+    text-align: center;
+    line-height: 13vw;
+    position: absolute;
+    margin: 0;
+    padding: 0;
+  }
+
+  #yes {
+    bottom: 0;
+    color: #2da7ff;
+  }
+
+  #no {
+    bottom: 0;
+    right: 0;
+    color: red;
+  }
+
+  /* css reset */
+  body, h1, h2, h3, ul, ol, li, figure, figcaption {
+    margin: 0;
+    padding: 0;
+  }
+
+  h1, h2, h3 {
+    font-weight: normal;
+  }
+
+  ul, ol {
+    list-style: outside none none;
+  }
+
+  a {
+    text-decoration: none;
+  }
+
+  /*区块,图片响应式*/
+  img {
+    display: block;
+    max-width: 100%;
+  }
+
+  #app {
+    width: 100%;
+    background-color: #EDEDED;
+  }
+
+  .mui-bar-tab {
+    bottom: 0;
+    display: table;
+    width: 100%;
+    height: 8vh;
+    padding: 0;
+    table-layout: fixed;
+    border-top: 0;
+    border-bottom: 0;
+    -webkit-touch-callout: none;
+  }
+
+  .mui-bar {
+    position: fixed;
+    z-index: 10;
+    right: 0;
+    left: 0;
+    height: 8vh;
+    /*padding-right: 10px;*/
+    /*padding-left: 10px;*/
+    border-bottom: 0;
+    background-color: #fff;
+    -webkit-box-shadow: 0 0 1px rgba(218, 218, 218, 0.85);
+    box-shadow: 0 0 1px rgba(218, 218, 218, 0.85);
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+  }
+
+  .mui-bar-tab .mui-tab-item {
+    display: table-cell;
+    overflow: hidden;
+    width: 1%;
+    height: 8vh;
+    text-align: center;
+    vertical-align: middle;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    color: #929292;
+  }
+
+  .mui-bar-tab .mui-tab-item .mui-icon {
+    top: 3px;
+    width: 24px;
+    height: 24px;
+    padding-top: 0;
+    padding-bottom: 0;
+  }
+
+  .mui-bar .mui-icon {
+    font-size: 5vh;
+    position: relative;
+    z-index: 20;
+    padding-top: 10px;
+    padding-bottom: 10px;
+  }
+
+  .mui-bar-tab .mui-tab-item.mui-active {
+    color: #FF3E05 !important;
+  }
+
+  .mui-bar-tab .mui-tab-item .mui-icon ~ .mui-tab-label {
+    font-size: 11px;
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .mui-tab-label {
+    font-size: 2.5vh !important;
+  }
+</style>

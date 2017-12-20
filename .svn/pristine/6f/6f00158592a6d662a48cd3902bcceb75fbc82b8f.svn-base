@@ -1,0 +1,170 @@
+<template>
+  <div class="templ">
+
+    <LiveHead :tolivehead="tolivehead"></LiveHead>
+
+    <router-view></router-view>
+    <section @touchend ="toNext" @touchstart="judge">
+      <aside>
+
+        <!-- 这里应该是写死的,用v-for来循环输出 -->
+        <!-- 这里将index作为参数传到changeActive里去 -->
+        <ul>
+          <li v-for="(item,index) in day" :class="{active:isActive==index}"
+              @click="changeActive(index)">{{item}}
+            <div class="dash" v-show="isActive==index"></div>
+          </li>
+        </ul>
+      </aside>
+      <div id="content">
+
+        <!--这里的数据用v-for循环输出-->
+        <ul>
+          <li>
+            <h1>{{show}}</h1>
+            <div class="state">{{state}}</div>
+          </li>
+          <!--消除浮动的-->
+          <div class="clear"></div>
+
+
+          <li>
+            <h1>{{show}}</h1>
+            <div class="state">{{state}}</div>
+          </li>
+          <!--消除浮动的-->
+          <div class="clear"></div>
+
+
+          <li>
+            <h1>{{show}}</h1>
+            <div class="state">{{state}}</div>
+          </li>
+          <!--消除浮动的-->
+          <div class="clear"></div>
+
+        </ul>
+      </div>
+      <div class="clear"></div>
+    </section>
+
+
+  </div>
+</template>
+
+<script>
+
+import LiveHead from './LiveHead.vue'
+
+
+export default {
+  data: function() {
+    return {
+      day:['今天','4月21日','4月20日','4月19日','4月18日','4月17日'],
+      show:'中国梦创作歌曲',
+      tolivehead:2,
+      isActive:0,
+      state:'直播中',
+      startX:0,
+      endX:0,
+      changeX:0
+    }
+  },
+  components:{
+    LiveHead
+  },
+  methods:{
+    changeActive:function (index) {
+      this.isActive=index;
+    },
+
+    //在点击屏幕开始收集坐标数据
+    judge:function (e) {
+      this.startX=e.changedTouches[0].clientX;
+    },
+    //判断滑动方向,模仿点击事件
+    //大于10像素就判断为滑动
+    toNext:function (e) {
+      this.endX=e.changedTouches[0].clientX;
+      this.changeX=this.startX-this.endX;
+      if((Math.abs(this.changeX)>10)&&this.changeX>0){
+        document.getElementById('comment').click();
+      }else if((Math.abs(this.changeX)>10)&&this.changeX<0){
+        document.getElementById('channel').click();
+      }
+    }
+  }
+};
+
+</script>
+
+<style scoped>
+
+section{
+  background-color: #fff;
+}
+/*左边导航  */
+aside{
+  border-right:2px solid #eee;
+  width:25%;
+  float: left;
+}
+.clear{
+  clear: both;
+}
+aside ul li{
+  position: relative;
+  height:49px;
+  text-align:center;
+  line-height:49px;
+  font-size:14px;
+  font-family: "Microsoft YaHei";
+  border-bottom: 1px solid #eee;
+}
+.dash{
+  width:2px;
+  background-color: #FF3E05;
+  height:25px;
+  position: absolute;
+  top:11px;
+  right:-2px;
+}
+.active{
+  font-size:15px;
+  color:#FF3E05;
+}
+
+
+/*右边的content*/
+#content{
+  width:75%;
+  float: right;
+}
+#content ul li{
+  height: 49px;
+  border-bottom: 1px solid #eee;
+}
+h1{
+  margin:18px 0 17px 16px;
+  padding-left: 20px;
+  font-size:15px;
+  font-family: "Microsoft Yahei";
+  color:#04B456;
+  float: left;
+}
+.state{
+  text-align: center;
+  width:57px;
+  height:25px;
+  font-size:12px;
+  color:#04B456;
+  float: right;
+  border:2px solid #04B456;
+  border-radius:25px;
+  margin-right:15px;
+  margin-top:12px;
+}
+
+
+</style>
+

@@ -1,0 +1,48 @@
+import wx from 'weixin-js-sdk'
+import Vue from 'vue'
+
+export default {
+
+  weixin() {
+    var url = "/cms/thirdPartyPortalInterface/doWeiXinGetSign.service?url=" + window.location.href;
+
+    Vue.http.get(url).then(res => {
+      var data = res.body;
+      this.wxConfig(data.appid, data.timestamp, data.nonceStr, data.signature);
+    }, res => {
+      console.log("错误!");
+    })
+  },
+  wxConfig(_appid, _timestamp, _nonceStr, _signature) {
+
+
+    wx.config({
+      debug: false,
+      appId: _appid,
+      timestamp: _timestamp,
+      nonceStr: _nonceStr,
+      signature: _signature,
+      jsApiList: [
+        'onMenuShareTimeline',
+        'onMenuShareAppMessage',
+        'showOptionMenu'
+      ]
+    })
+
+    wx.ready(function (res) {
+      wx.showOptionMenu();
+      wx.onMenuShareTimeline({
+        title: "我正在看苏州有线微信电视",
+        link: "http://wxtv1.sz96296.com/wxtv/#/",
+        imgUrl: "https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1498053089304&di=c16344e7decb8004e7b06eb23eac259a&imgtype=0&src=http%3A%2F%2Fimg.25pp.com%2Fuploadfile%2Fapp%2Ficon%2F20160202%2F1454373232648196.jpg",
+        success: function () {
+        },
+        cancel: function () {
+        }
+      });
+    })
+    wx.error(function (res) {
+    })
+  }
+
+}

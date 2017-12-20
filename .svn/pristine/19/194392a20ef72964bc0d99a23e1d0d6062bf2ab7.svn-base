@@ -1,0 +1,622 @@
+<template>
+  <div class="templ1">
+
+
+    <div id="headTop">
+      <!--先用图片代替-->
+      <div id="video">
+        <!--<img src="../../assets/timg.png"/>-->
+        <video id="video1" controls autoplay x5-video-player-type="h5">
+
+          <source type="video/mp4" :src="videoAddress">
+
+        </video>
+
+        <span class="icon-chs_sywx_ic_jt_left" @click="goBack"></span>
+
+      </div>
+
+      <div id="videoMsg">
+        <div id="Msg">
+          <img src="../../assets/images/ic_now.png" alt="">
+          <p>{{ channelName }}&nbsp;&nbsp;|&nbsp;&nbsp;{{ showName }}</p>
+          <span v-if="$route.query.shengchannelId!=''" class="toupin" @click="TVplay();">电视播放</span>
+          <span v-else :class="{toupin:status==1, toupin2:status!=1}" @click="TVplay();">电视播放</span>
+        </div>
+        <div id="Look">
+        <span @click="goDownLoad();">
+          试看10分钟&nbsp;&nbsp;下载苏州云媒体客户端看全片
+        </span>
+        </div>
+      </div>
+
+      <header>
+        <ul>
+          <li @click="changeDash('show')">
+            <!--<router-link id="show" to="/live/Channel/show" :class="{active:tolivehead==2}">节目单</router-link>-->
+            节目单
+            <div class="dash" v-show="whatDash=='show'"></div>
+          </li>
+          <li @click="changeDash('comment')">
+            <!--<router-link id="comment" to="/live/Channel/comment" :class="{active:tolivehead==3}"></router-link>-->
+            评论
+            <div class="dash" v-show="whatDash=='comment'"></div>
+          </li>
+        </ul>
+      </header>
+    </div>
+
+    <div id="download" v-show="downloadTips">
+      <div id="download_tips">
+        <div class="msg">
+          在苏州云媒体APP中继续观看？
+        </div>
+        <span class="lineX"></span>
+        <span class="lineY"></span>
+        <p id="yes" @click="goDownLoad();">打开</p>
+        <p id="no" @click="no();">取消</p>
+      </div>
+    </div>
+
+    <Show v-show="whatDash=='show'" :channelName="channelName" v-on:cb="scb" ref="show"></Show>
+
+    <Comment v-show="whatDash=='comment'"></Comment>
+
+    <div id="footbanner" @click="goDownLoad();">
+      <img src="../../assets/images/lianjie.png" alt="">
+    </div>
+
+  </div>
+
+</template>
+
+<script>
+
+  import Show from './Show.vue'
+  import Comment from './Comment.vue'
+  import {Toast} from 'mint-ui';
+  import '@/assets/js/strophe'
+  import '@/assets/js/strophe.muc'
+  import '@/assets/js/strophe.register'
+
+  export default {
+    data: function () {
+      return {
+        channelName: this.$route.query.name,
+        showName: this.$route.query.currentShow,
+        channelId: this.$route.query.channelId,
+        whatDash: "show",
+        toast: null,
+        server: 'dp0.sz96296.com',
+        BOSH_SERVICE: 'ws://122.193.8.100:7076/websocket',
+        pageNum: 0,
+        status: "1",
+        downloadTips: false
+      }
+    },
+    props: ["tolivehead"],
+    created(){
+//      this.xmpp();
+    },
+    mounted(){
+      this.stopVideo();
+    },
+    watch: {
+      videoAddress(){
+        document.getElementById("video1").load();
+      }
+    },
+    components: {
+      Show,
+      Comment
+    },
+    computed: {
+      videoAddress(){
+//        alert(this.$store.state.videoAddress);
+        return this.$store.state.videoAddress;
+      }
+    },
+    methods: {
+      changeDash(v1){
+        this.whatDash = v1;
+      },
+      scb(name, status){
+        this.showName = name;
+        this.status = status
+      },
+      goDownLoad() {
+        window.location.href = "http://dp2.sz96296.com:8091/download/index.html";
+      },
+      goBack() {
+        this.$router.go(-1);
+      },
+      stopVideo() {
+        var vid = document.getElementById("video1");
+        var that = this;
+        vid.ontimeupdate = function () {
+          if (vid.currentTime > 600) {
+            vid.pause();
+            that.downloadTips = true;
+          }
+        };
+      },
+      TVplay() {
+//        this.sendMsg("回看");
+//        return
+        if (this.$store.state.openid == 0 || this.$store.state.openid == undefined || this.$store.state.openid == -1) {
+          alert("请先登录!");
+          return
+        }
+        if (this.$store.state.STBid == "") {
+          alert("请先绑定机顶盒!");
+          this.$router.push({path: "/STB_list"});
+          return
+        } else {
+          if (this.$refs.show.status == 1) {
+            this.sendMsg("直播");
+          }
+          else if (this.$refs.show.status == 2) {
+            if (this.$route.query.shengchannelId == "") {
+              return
+            }
+            this.sendMsg("回看");
+            this.$store.commit("isSmallRCshow", !this.$store.state.isSmallRCshow);
+            this.$store.commit("isRCshow", !this.$store.state.isRCshow);
+          }
+        }
+      },
+      xmpp() {
+        if (this.$store.state.connection == null) {
+          if (this.$store.state.openid == 0 || this.$store.state.openid == undefined || this.$store.state.openid == -1) {
+            return
+          } else if (this.$store.state.STBid == "") {
+            return
+          }
+
+          this.toast = Toast("连接中,给我几秒,请稍等...");
+          var that = this;
+          var url = this.BOSH_SERVICE;
+          this.$store.commit("connection", new Strophe.Connection(url));
+          var username = this.$store.state.openid;
+          var password = "123456";
+
+          var registerCallback = function (status) {
+            if (status === Strophe.Status.REGISTER) {
+              that.$store.state.connection.register.fields.username = username;
+              that.$store.state.connection.register.fields.password = password;
+              that.$store.state.connection.register.submit();
+            } else if (status === Strophe.Status.REGISTERED) {
+              that.$store.state.connection.authenticate();
+            } else if (status === Strophe.Status.CONNECTED) {
+              that.toast.close();
+              Toast({
+                message: '连接成功!',
+                duration: 1000
+              });
+            } else if (status === Strophe.Status.ERROR) {
+              that.toast.close();
+              Toast({
+                message: '连接发生错误!',
+                duration: 1000
+              });
+            } else if (status === Strophe.Status.CONNTIMEOUT) {
+              that.toast.close();
+              Toast({
+                message: '连接超时!',
+                duration: 1000
+              });
+            }
+          }
+          that.$store.state.connection.register.connect(this.server, registerCallback);
+        }
+      },
+      sendMsg(msg) {
+
+        var to = this.$store.state.STBid + "@" + this.server;
+        var from = this.$store.state.openid + "@" + this.server;
+        var con = "";
+
+        if (msg == "KEY_QUIT") {
+          con = '<Keyboard><InstanceID>0</InstanceID><Unit>KEYBOARD_CODE</Unit><Target>-16777202</Target></Keyboard>';
+        }
+        else if (msg == "KEY_MENU") {
+          con = '<Keyboard><InstanceID>0</InstanceID><Unit>KEYBOARD_CODE</Unit><Target>-16777203</Target></Keyboard>';
+        }
+        else if (msg == "KEY_VOLUME_DOWN") {
+          con = '<Keyboard><InstanceID>0</InstanceID><Unit>KEYBOARD_CODE</Unit><Target>-16777188</Target></Keyboard>';
+        }
+        else if (msg == "KEY_VOLUME_UP") {
+          con = '<Keyboard><InstanceID>0</InstanceID><Unit>KEYBOARD_CODE</Unit><Target>-16777189</Target></Keyboard>';
+        }
+        else if (msg == "KEY_UP") {
+          con = '<Keyboard><InstanceID>0</InstanceID><Unit>KEYBOARD_CODE</Unit><Target>-16777197</Target></Keyboard>';
+        }
+        else if (msg == "KEY_DOWN") {
+          con = '<Keyboard><InstanceID>0</InstanceID><Unit>KEYBOARD_CODE</Unit><Target>-16777196</Target></Keyboard>';
+        }
+        else if (msg == "KEY_LEFT") {
+          con = '<Keyboard><InstanceID>0</InstanceID><Unit>KEYBOARD_CODE</Unit><Target>-16777198</Target></Keyboard>';
+        }
+        else if (msg == "KEY_RIGHT") {
+          con = '<Keyboard><InstanceID>0</InstanceID><Unit>KEYBOARD_CODE</Unit><Target>-16777195</Target></Keyboard>';
+        }
+        else if (msg == "KEY_OK") {
+          con = '<Keyboard><InstanceID>0</InstanceID><Unit>KEYBOARD_CODE</Unit><Target>-16777199</Target></Keyboard>';
+        }
+        else if (msg == "KEY_POWER") {
+          con = '<Keyboard><InstanceID>0</InstanceID><Unit>KEYBOARD_CODE</Unit><Target>-16777215</Target></Keyboard>';
+        }
+        else if (msg == "KEY_BACK") {
+          con = '<Keyboard><InstanceID>0</InstanceID><Unit>KEYBOARD_CODE</Unit><Target>-16777201</Target></Keyboard>';
+        }
+        else if (msg == "0") {
+          con = '<Keyboard><InstanceID>0</InstanceID><Unit>KEYBOARD_CODE</Unit><Target>-16777204</Target></Keyboard>';
+        }
+        else if (msg == "1") {
+          con = '<Keyboard><InstanceID>0</InstanceID><Unit>KEYBOARD_CODE</Unit><Target>-16777213</Target></Keyboard>';
+        }
+        else if (msg == "2") {
+          con = '<Keyboard><InstanceID>0</InstanceID><Unit>KEYBOARD_CODE</Unit><Target>-16777212</Target></Keyboard>';
+        }
+        else if (msg == "3") {
+          con = '<Keyboard><InstanceID>0</InstanceID><Unit>KEYBOARD_CODE</Unit><Target>-16777211</Target></Keyboard>';
+        }
+        else if (msg == "4") {
+          con = '<Keyboard><InstanceID>0</InstanceID><Unit>KEYBOARD_CODE</Unit><Target>-16777210</Target></Keyboard>';
+        }
+        else if (msg == "5") {
+          con = '<Keyboard><InstanceID>0</InstanceID><Unit>KEYBOARD_CODE</Unit><Target>-16777209</Target></Keyboard>';
+        }
+        else if (msg == "6") {
+          con = '<Keyboard><InstanceID>0</InstanceID><Unit>KEYBOARD_CODE</Unit><Target>-16777208</Target></Keyboard>';
+        }
+        else if (msg == "7") {
+          con = '<Keyboard><InstanceID>0</InstanceID><Unit>KEYBOARD_CODE</Unit><Target>-16777207</Target></Keyboard>';
+        }
+        else if (msg == "8") {
+          con = '<Keyboard><InstanceID>0</InstanceID><Unit>KEYBOARD_CODE</Unit><Target>-16777206</Target></Keyboard>';
+        }
+        else if (msg == "9") {
+          con = '<Keyboard><InstanceID>0</InstanceID><Unit>KEYBOARD_CODE</Unit><Target>-16777205</Target></Keyboard>';
+        }
+        else if (msg == "直播") {
+          con = '<SetAVTransportURI><InstanceID>0</InstanceID><CurrentURI></CurrentURI><CurrentURIMetaData>mediaType=3&Freq=' + this.$route.query.frequency + '&Symb=' + this.$route.query.symbolRate + '&Mod=' + this.$route.query.qam + '&ServiceID=' + this.$route.query.serviceId + '&RangeStart=0&RangeEnd=0&Volume=30&PlayOffset=0</CurrentURIMetaData></SetAVTransportURI>';
+        }
+        else if (msg == "回看") {
+          var count = this.count(this.$refs.show.whichTime, this.$refs.show.showlist);
+          con = '<SetAVTransportURI><InstanceID>0</InstanceID><CurrentURI>http://172.18.224.25/cpg/programtimelineindex.action?clientid=' + this.$store.state.STBid + '&groupid=5121&language=&channelid=' + this.$refs.show.shengchannelId + '&channelcategoryid=61,63&isInside=YES&&focus_y_num=' + count.y + '&focus_x_num=' + count.x + '&pageNum=' + count.page + '</CurrentURI><CurrentURIMetaData>mediaType=4&Freq=0&Symb=0&Mod=0&ServiceID=0&RangeStart=0&RangeEnd=0&Volume=30&PlayOffset=20</CurrentURIMetaData></SetAVTransportURI>'
+        }
+
+        var m = $msg({
+          to: to, //发送过去的地址(机顶盒号id+域名)
+          from: from, //本地地址
+          type: 'chat'
+        }).c("body").t(con);
+
+        this.$store.state.connection.send(m);
+
+      },
+      count(_p, _plist) {
+        var p = _p.substr(0, 4) + "-" + _p.substr(4, 2) + "-" + _p.substr(6, _p.length);
+
+        var _now = new Date();
+        var _pt = new Date(p);
+        var page = _pt.getHours() == 0 ? 1 : Math.ceil(_pt.getHours() / 3);
+
+        if (_pt.getHours() != 0 && _pt.getHours() % 3 == 0) {
+          page += 1;
+        }
+
+        var _sh = (page - 1) * 3;
+
+        var y = _now.getDate() - _pt.getDate();
+        var x = -1;
+        for (var _i = _plist.length - 1; _i >= 0; _i--) {
+          var _t = _plist[_i].startTime.substr(9, _plist[_i].startTime.length).split(":");
+          var _h = Number(_t[0]);
+          var _m = Number(_t[1]);
+          var _s = Number(_t[2]);
+          if (_h >= _sh) {
+            x++;
+          }
+          if (_pt.getHours() == _h && _pt.getMinutes() == _m && _pt.getSeconds() == _s) {
+            break;
+          }
+        }
+
+        if(page!=1&&(_pt.getHours()%3!=0||_pt.getMinutes()!=0||_pt.getSeconds()!=0)){
+          x++;
+        }
+
+        return {'x': x, 'y': y, 'page': page}
+      },
+      no() {
+        this.downloadTips = false;
+      }
+    }
+  };
+
+</script>
+
+<style scoped>
+  p {
+    margin: 0;
+    padding: 0;
+  }
+
+  .templ1 {
+    background-color: #fff;
+  }
+
+  #video {
+    /*height:203px;*/
+    width: 100%;
+    position: relative;
+  }
+
+  #video img {
+    /*height:203px;*/
+    width: 100%;
+  }
+
+  #videoMsg {
+    width: 100%;
+    height: 12vh;
+    /*background-color: red;*/
+  }
+
+  #Msg {
+    width: 100%;
+    height: 5vh;
+    line-height: 5vh;
+    border-bottom: 1px solid #e7e7e7;
+    overflow: hidden;
+  }
+
+  #Msg img {
+    width: 5vw;
+    margin: 1vh 0 0 2vw;
+    display: inline-block;
+    float: left;
+  }
+
+  #Msg p {
+    width: 65vw;
+    margin: 0 0 0 2vw;
+    float: left;
+    font-size: 14px;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+  }
+
+  #Msg .toupin {
+    float: right;
+    margin: 0.3vh 3vw 0 0;
+    width: 20vw;
+    height: 4vh;
+    line-height: 4vh;
+    text-align: center;
+    border-radius: 4vh;
+    background-color: #FF3E05;
+    color: white;
+  }
+
+  #Msg .toupin2 {
+    float: right;
+    margin: 0.3vh 3vw 0 0;
+    width: 20vw;
+    height: 4vh;
+    line-height: 4vh;
+    text-align: center;
+    border-radius: 4vh;
+    background-color: #dbdbdb;
+    color: #868686;
+  }
+
+  #Look {
+    width: 100%;
+    height: 9vh;
+    border-bottom: 1vh solid #e7e7e7;
+  }
+
+  #Look span {
+    display: block;
+    width: 95%;
+    height: 7vh;
+    margin: 0 auto;
+    transform: translateY(1vh);
+    border-radius: 5px;
+    background-color: #FB5C5C;
+    color: white;
+    font-size: 16px;
+    text-align: center;
+    line-height: 7vh;
+  }
+
+  #download {
+    width: 100%;
+    height: 100vh;
+    position: fixed;
+    top: 0;
+    background: rgba(0, 0, 0, 0.3);
+    z-index: 1000;
+  }
+
+  #download_tips {
+    width: 70vw;
+    height: 45vw;
+    background-color: #fff;
+    position: fixed;
+    z-index: 9999;
+    top: 50%;
+    left: 50%;
+    transform: translateX(-35vw) translateY(-25vw);
+  }
+
+  #download_tips .msg {
+    width: 100%;
+    height: 32vw;
+    text-align: center;
+    line-height: 32vw;
+    font-size: 5vw;
+  }
+
+  #download_tips .lineX {
+    display: block;
+    width: 100%;
+    height: 1px;
+    background-color: #c3c3c3;
+    position: absolute;
+    bottom: 13vw;
+  }
+
+  #download_tips .lineY {
+    display: block;
+    width: 13vw;
+    height: 1px;
+    background-color: #c3c3c3;
+    position: absolute;
+    bottom: 6.5vw;
+    left: 28.5vw;
+    transform: rotate(90deg);
+  }
+
+  #download_tips p {
+    float: left;
+    width: 35vw;
+    height: 13vw;
+    text-align: center;
+    line-height: 13vw;
+    position: absolute;
+  }
+
+  #yes {
+    bottom: 0;
+    color: #2da7ff;
+  }
+
+  #no {
+    bottom: 0;
+    right: 0;
+    color: red;
+  }
+
+  header {
+    height: 5vh;
+    margin-top: 3vh;
+    border-bottom: 2px solid #eee;
+    background-color: #fff;
+    line-height: 5vh;
+  }
+
+  header ul {
+    height: 5vh;
+    line-height: 5vh;
+  }
+
+  header ul li {
+    height: 5vh;
+    line-height: 5vh;
+    text-align: center;
+    width: 49%;
+    float: left;
+    font-size: 14px;
+    font-weight: 700;
+    position: relative;
+  }
+
+  #headTop {
+    width: 100%;
+    position: fixed;
+    top: 0;
+    z-index: 999;
+    background-color: #fff;
+  }
+
+  img {
+    display: block;
+    max-width: 100%;
+  }
+
+  a {
+    color: #222222;
+    font-size: 14px;
+    line-height: 7vh;
+    font-family: "Microsoft YaHei";
+  }
+
+  /*li {*/
+  /*list-style: none;*/
+  /*display: inline-block;*/
+  /*width: 49%;*/
+  /*position: relative;*/
+  /*text-align: center;*/
+  /*}*/
+
+  .dash {
+    width: 17px;
+    height: 2px;
+    background-color: #FF3E05;
+    display: inline-block;
+  }
+
+  /*li:nth-child(1) div{*/
+  /*position: absolute;*/
+  /*left:40%;*/
+  /*top:7vh;*/
+  /*}*/
+  li:nth-child(1) div {
+    position: absolute;
+    left: 46%; /* 虽然用的是百分比，还是不能响应式对齐 */
+    top: 5vh;
+  }
+
+  li:nth-child(2) div {
+    position: absolute;
+    right: 45%;
+    top: 5vh;
+  }
+
+  .active {
+    font-size: 15px;
+    color: #FF3E05;
+  }
+
+  /*字体图标样式  */
+  .icon-chs_sywx_ic_detail_tp, .icon-chs_sywx_ic_jt_left {
+    width: 31px;
+    height: 31px;
+    color: #fff;
+    text-align: center;
+    line-height: 31px;
+    border-radius: 50%;
+    background-color: #000;
+    font-size: 20px;
+    opacity: 0.3;
+  }
+
+  .icon-chs_sywx_ic_jt_left {
+    position: absolute;
+    left: 16px;
+    top: 9px;
+  }
+
+  .icon-chs_sywx_ic_detail_tp {
+    position: absolute;
+    right: 16px;
+    top: 9px;
+  }
+
+  video {
+    width: 100%;
+    height: 28.11vh;
+  }
+
+  #footbanner {
+    position: fixed;
+    bottom: 0;
+    z-index: 99;
+  }
+</style>
+

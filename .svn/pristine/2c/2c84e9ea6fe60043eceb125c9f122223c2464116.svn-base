@@ -1,0 +1,73 @@
+<template>
+  <div id="top">
+    <header>
+      <img src="../../assets/images/logo.png" alt="" id="logo">
+
+      <!--去搜索页面-->
+      <router-link to="/search"><input type="text" placeholder="搜索" id="search"></router-link>
+      <span class="icon-chs_sywx_ic_history"></span>
+    </header>
+  </div>
+</template>
+
+<script>
+  export default {
+    data(){
+      return {}
+    }
+  }
+</script>
+
+<style scoped>
+
+  #top {
+    width: 100%;
+    position: fixed;
+    z-index: 100;
+    top: 0;
+  }
+
+  header {
+    width: 100%;
+    height: 8vh;
+    background-color: #FF3E05;
+    overflow: hidden;
+    position: relative;
+  }
+
+  #recommend {
+    margin-bottom: 50px;
+  }
+
+  #logo {
+    width: 80px;
+    position: absolute;
+    top: 50%;
+    transform: translateY(-2vh);
+    margin: 0 0 0 8px;
+    float: left;
+  }
+
+  #search {
+    position: absolute;
+    width: 49vw;
+    height: 5vh;
+    border: 0;
+    border-radius: 5px;
+    top: 50%;
+    left: 50%;
+    margin: 0 0 0 15px;
+    transform: translateY(-3vh) translateX(-25vw);
+    text-align: center;
+    font-size: 14px;
+  }
+
+  .icon-chs_sywx_ic_history {
+    font-size: 30px;
+    color: white;
+    display: block;
+    float: right;
+    margin: 9px 16px 0 0;
+  }
+
+</style>

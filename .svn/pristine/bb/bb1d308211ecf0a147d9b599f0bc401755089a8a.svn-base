@@ -1,0 +1,88 @@
+import wx from 'weixin-js-sdk'
+import Vue from 'vue'
+
+export default {
+  isReady: false,
+  tmpEve: {},
+  weixin() {
+    var url = "/cms/thirdPartyPortalInterface/doWeiXinGetSign.service?url=" + window.location.href;
+
+    Vue.http.get(url).then(res => {
+      var data = res.body;
+
+      this.wxConfig(data.appid, data.timestamp, data.nonceStr, data.signature);
+    }, res => {
+      console.log("错误!");
+    })
+
+  },
+  wxConfig(_appid, _timestamp, _nonceStr, _signature) {
+    wx.config({
+      debug: true,
+      appId: _appid,
+      timestamp: _timestamp,
+      nonceStr: _nonceStr,
+      signature: _signature,
+      jsApiList: [
+        'onMenuShareTimeline',
+        'onMenuShareAppMessage',
+        'onMenuShareQQ',
+        'onMenuShareQZone',
+        'showOptionMenu',
+        'scanQRCode',
+        'startRecord',
+        'stopRecord',
+        'translateVoice'
+      ]
+    })
+
+    var _self = this;
+
+    wx.ready(function (res) {
+
+
+      wx.showOptionMenu();
+
+      this.isReady = true;
+      if (_self.tmpEve.eve) {
+        if (_self.tmpEve.param) {
+          wx[_self.tmpEve.eve](_self.tmpEve.param);
+        } else {
+          wx[_self.tmpEve.eve]();
+        }
+      }
+
+    })
+    wx.error(function (res) {
+      // alert(res);
+    })
+  },
+  onMenuShareTimeline(v){
+    if (this.isReady) {
+      wx.onMenuShareTimeline(v)
+    } else {
+      this.tmpEve = {eve: "onMenuShareTimeline", param: v};
+    }
+  },
+  onMenuShareAppMessage(v){
+    if (this.isReady) {
+      wx.onMenuShareAppMessage(v)
+    } else {
+      this.tmpEve = {eve: "onMenuShareAppMessage", param: v};
+    }
+  },
+  onMenuShareQQ(v){
+    if (this.isReady) {
+      wx.onMenuShareQQ(v)
+    } else {
+      this.tmpEve = {eve: "onMenuShareQQ", param: v};
+    }
+  },
+  onMenuShareQZone(v){
+    if (this.isReady) {
+      wx.onMenuShareQZone(v)
+    } else {
+      this.tmpEve = {eve: "onMenuShareQZone", param: v};
+    }
+  }
+}

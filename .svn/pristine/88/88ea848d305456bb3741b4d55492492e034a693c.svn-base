@@ -1,0 +1,322 @@
+<template>
+  <div id="STB">
+
+    <header>
+      <span class="icon-chs_sywx_ic_jt_left" @click="goBack"></span>
+      <span class="title">机顶盒</span>
+      <span class="add" @click="saoyisao();">扫一扫添加</span>
+    </header>
+
+    <div v-show="$store.state.isHaveSTB">
+
+      <div class="STBs" v-for="(item, index) in STB_List">
+        <img src="../../assets/images/switch_icon_box.png" alt="">
+        <p class="STB_name">{{ item.clientusername }}</p>
+        <div class="Connection_state border1">未连接</div>
+      </div>
+
+    </div>
+
+    <img src="../../assets/images/RC/diagram_icon_notbound.png" alt="" class="notConnect" v-show="!$store.state.isHaveSTB">
+
+  </div>
+</template>
+
+<script>
+  import wx from 'weixin-js-sdk'
+  import '@/assets/js/md5.min'
+  import '@/assets/js/utils'
+
+  export default {
+    data(){
+      return {
+        msg: "",
+        name: "XXX的机顶盒",
+        STB_List: []
+      }
+    },
+    created() {
+      this.weixin();
+      this.dengluzhuce();
+    },
+    methods: {
+      goBack() {
+        this.$router.go(-1);
+      },
+      saoyisao(){
+        var that = this;
+        wx.scanQRCode({
+          needResult: 1, // 默认为0，扫描结果由微信处理，1则直接返回扫描结果，
+          scanType: ["qrCode", "barCode"], // 可以指定扫二维码还是一维码，默认二者都有
+          success: function (res) {
+            //分割数据，可以用来判断扫的是条形码还是二维码 顺便init一些数据
+            var msmp_appkey = "76579579da14418ba97b1cbe38366410";
+            var data = res.resultStr.split(/_/);
+            var randomCode = data[0];
+            var STB_id = data[1];
+            var userID = that.$store.state.userID;
+
+            //条形码
+            if (randomCode == "CODE") {
+              var temp = STB_id.split(/,/);
+              STB_id = temp[1];
+
+              //查询验证码是否有效
+              var url = '/cms/thirdPartyPortalInterface/validRandomCode.service?type=barcode&stbNo=' + STB_id + '&resFormat=json';
+              that.$http.get(url).then(res => {
+                var data = res.body;
+                //失效
+                if (data.validRandomCodeResponse.result == "false") {
+                  alert("您的验证码已失效！请刷新机顶盒页面！");
+                }
+                //有效
+                else if (data.validRandomCodeResponse.result == "true") {
+                  //绑定的URL 参数 sign的设置
+                  var bind_params = 'userid=' + userID + '&userpassword=123456&clientid=' + STB_id + '&devicetype=6';
+                  var bind_sign = getSign(bind_params + msmp_appkey);
+                  var bind_url = '/msmp/nscreen/bind.action?userid=' + userID + '&userpassword=123456&clientid=' + STB_id + '&devicetype=6&sign=' + bind_sign;
+                  //发送绑定请求
+                  that.$http.get(bind_url, {headers: {Authorization: "Basic " + btoa("screen:screen123")}}).then(res => {
+                    var bind_data = res.body;
+                    //判断盒子能否绑定
+                    var bind_code = bind_data.substring(bind_data.indexOf("<errorcode>") + 11, (bind_data.indexOf("</errorcode>")));
+                    if (bind_code == "-10") {
+                      alert("该机顶盒用户绑定已满！");
+                    }
+                    else if (bind_code == "-3") {
+                      alert("您已绑定该机顶盒，无法重复绑定！");
+                    }
+                    else {
+                      alert("绑定成功!");
+                    }
+                  }, res => {
+                    alert("绑定接口出错！请稍候再试!");
+                  })
+                }
+              }, res => {
+                alert("校验码接口错误！请稍候再试！");
+              })
+            }
+            //二维码
+            else {
+              //先验证二维码的校验码是否有效
+              var url = '/cms/thirdPartyPortalInterface/validRandomCode.service?type=barcode&stbNo=' + STB_id + '&resFormat=json';
+//              randomCode=' + randomCode + '&
+              that.$http.get(url).then(res => {
+                var data = res.body;
+                //失效
+                if (data.validRandomCodeResponse.result == "false") {
+                  alert("您的验证码已失效！请刷新机顶盒页面！");
+                }
+                //有效
+                else if (data.validRandomCodeResponse.result == "true") {
+                  //有效则绑定机顶盒  (先拿userID)
+                  //绑定的URL 参数 sign的设置
+                  var bind_params = 'userid=' + userID + '&userpassword=123456&clientid=' + STB_id + '&devicetype=6';
+                  var bind_sign = getSign(bind_params + msmp_appkey);
+                  var bind_url = '/msmp/nscreen/bind.action?userid=' + userID + '&userpassword=123456&clientid=' + STB_id + '&devicetype=6&sign=' + bind_sign;
+                  //发送绑定请求
+                  that.$http.get(bind_url, {headers: {Authorization: "Basic " + btoa("screen:screen123")}}).then(res => {
+                    var bind_data = res.body;
+                    //判断盒子能否绑定
+                    var bind_code = bind_data.substring(bind_data.indexOf("<errorcode>") + 11, (bind_data.indexOf("</errorcode>")));
+                    if (bind_code == "-10") {
+                      alert("该机顶盒用户绑定已满！");
+                    }
+                    else if (bind_code == "-3") {
+                      alert("您已绑定该机顶盒，无法重复绑定！");
+                    }
+                    else {
+                      alert("绑定成功!");
+                    }
+                  }, res => {
+                    alert("绑定接口出错！请稍候再试!");
+                  })
+                }
+              }, res => {
+                alert("校验码接口错误！请稍候再试！");
+              })
+            }
+          }
+        });
+      },
+      weixin() {
+        var url = "/cms/thirdPartyPortalInterface/doWeiXinGetSign.service?url=" + window.location.href;
+
+        this.$http.get(url).then(res => {
+          var data = res.body;
+          this.wxConfig(data.appid, data.timestamp, data.nonceStr, data.signature);
+        }, res => {
+          console.log("错误!");
+        })
+      },
+      wxConfig(_appid, _timestamp, _nonceStr, _signature) {
+        wx.config({
+          debug: false,
+          appId: _appid,
+          timestamp: _timestamp,
+          nonceStr: _nonceStr,
+          signature: _signature,
+          jsApiList: [
+            'scanQRCode'
+          ]
+        })
+
+        wx.ready(function (res) {
+//          alert("success-ready");
+        })
+
+        wx.error(function (res) {
+//          alert("请稍后再试！");
+        })
+      },
+      dengluzhuce() {
+        //1
+        //有效则绑定机顶盒  (先拿userID)
+        //直接拿openid注册，失败则是有账号了
+        var that = this;
+        var openid = "oH3X-vsudC_6fTuP6M3JWOOfFTJ8";
+        var msmp_appkey = "76579579da14418ba97b1cbe38366410";
+
+        var register_params = 'loginname=' + openid + '&loginpwd=123456&devicetype=6&logintype=wechat&status=0&recommendno=&deviceno=' + openid;
+        var register_sign = getSign(register_params + msmp_appkey);
+        var register_url = '/msmp/nscreen/register.action?loginname=' + openid + '&loginpwd=123456&devicetype=6&logintype=wechat&status=0&recommendno=&deviceno=' + openid + '&sign=' + register_sign;
+        that.$http.get(register_url, {headers: {Authorization: "Basic " + btoa("screen:screen123")}}).then(res => {
+          var register_data = res.body;
+          var uid = register_data.substring(register_data.indexOf("<userid>") + 8, (register_data.indexOf("</userid>")));   //存储userid
+          var code = register_data.substring(register_data.indexOf("<errorcode>") + 11, (register_data.indexOf("</errorcode>")));   //存储状态码
+
+          if (code == "-3") {
+            alert("超过最大绑定用户数!");
+          }
+          //登录1
+          else if (code == "0") {
+
+            //情况1：注册成功，讲userid存进vuex中，然后发送登录请求
+            //存userID
+            that.$store.commit("userID", uid);
+
+            //设置login的URL 参数 sign的设置
+            var login_params = "loginname=" + openid + "&loginpwd=123456&devicetype=6&logintype=wechat&resultformat=JSON";
+            var login_sign = getSign(login_params + msmp_appkey);
+            var login_url = "/msmp/nscreen/login.action?loginname=" + openid + "&loginpwd=123456&devicetype=6&logintype=wechat&resultformat=JSON&sign=" + login_sign;
+            //发送登录请求
+            that.$http.get(login_url, {headers: {Authorization: "Basic " + btoa("screen:screen123")}}).then(res => {
+              var login_data = res.body;
+
+              that.$store.commit("userID", login_data.userid);
+            }, res => {
+              alert("登录1接口错误！");
+            })
+          }
+          //登录2
+          else if (code == "-1") {
+
+            //login的URL 参数 sign的设置
+            var login_params = "loginname=" + openid + "&loginpwd=123456&devicetype=6&logintype=wechat&resultformat=JSON";
+            var login_sign = getSign(login_params + msmp_appkey);
+            var login_url = "/msmp/nscreen/login.action?loginname=" + openid + "&loginpwd=123456&devicetype=6&logintype=wechat&resultformat=JSON&sign=" + login_sign;
+            //发送登录请求
+            that.$http.get(login_url, {headers: {Authorization: "Basic " + btoa("screen:screen123")}}).then(res => {
+              var login_data = res.body;
+              //将userid存入vuex
+              console.log(login_data)
+
+              that.STB_List = login_data.clients;
+              that.$store.commit("isHaveSTB", true);
+              that.$store.commit("userID", login_data.userid);
+            }, res => {
+              alert("登录2接口错误！");
+            })
+          }
+        }, res => {
+          alert("注册接口出错！请稍候再试!");
+        })
+
+      }
+    },
+    components: {}
+  }
+</script>
+
+<style scoped>
+  p {
+    margin: 0;
+    padding: 0;
+  }
+
+  #STB {
+    background-color: #fff;
+  }
+
+  header {
+    width: 100%;
+    height: 8vh;
+    text-align: center;
+    line-height: 8vh;
+    font-size: 3vh;
+    border-bottom: 2px solid #FF3E05;
+    background-color: #fff;
+    position: relative;
+  }
+
+  header .icon-chs_sywx_ic_jt_left {
+    font-size: 3.5vh;
+    color: #FF3E05;
+    position: absolute;
+    left: 3vh;
+    top: 2.25vh;
+  }
+
+  header .add {
+    font-size: 2.5vh;
+    color: #FF3E05;
+    position: absolute;
+    right: 3vh;
+    /*top: 2.25vh;*/
+  }
+
+  .STBs {
+    width: 100%;
+    height: 8vh;
+    border-bottom: 3px solid #dddddd;
+  }
+  .STBs img {
+    width: 4vh;
+    margin: 2vh 0 0 5vw;
+    float: left;
+  }
+  .STBs .STB_name {
+    height: 8vh;
+    line-height: 8vh;
+    font-size: 18px;
+    float: left;
+    margin-left: 5vw;
+  }
+  .STBs .Connection_state {
+    display: block;
+    width: 14vw;
+    height: 4vh;
+    font-size: 14px;
+    line-height: 4vh;
+    text-align: center;
+    float: right;
+    margin: 2vh 5vw 0 0;
+  }
+  .border1 {
+    border: 2px solid #c7c7c7;
+    border-radius: 4vh;
+    color: #c7c7c7;
+  }
+
+  .border2 {
+    border: 2px solid #04B456;
+    border-radius: 4vh;
+    color: #04B456;
+  }
+  .notConnect {
+    width: 60vw;
+    margin: 0 auto;
+    margin-top: 17vh;
+  }
+</style>

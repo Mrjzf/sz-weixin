@@ -1,0 +1,150 @@
+<template>
+  <div id="app">
+
+    <router-view></router-view>
+
+    <nav class="mui-bar mui-bar-tab">
+      <template v-for="(item, index) in navList">
+        <router-link class="mui-tab-item" :to="item.path"  @click.native="changeActive(index)">
+          <span :class="item.classN | isActive(index, isActive)"></span>
+          <span class="mui-tab-label">{{item.name}}</span>
+        </router-link>
+      </template>
+    </nav>
+
+  </div>
+</template>
+
+<script>
+
+
+  export default {
+    name: 'app',
+    data: function () {
+      return {
+        isActive: 0,
+        navList: [
+          {name: "推荐", classN: "mui-icon icon-chs_sywx_ic_home", path: "/Recommend"},
+          {name: "直播", classN: "mui-icon icon-chs_sywx_ic_living", path: "/live/show"},
+          {name: "点播", classN: "mui-icon icon-chs_sywx_ic_vod", path: "/VOD"},
+          {name: "遥控器", classN: "mui-icon icon-chs_sywx_ic_rc", path: "/RC"},
+          {name: "我的", classN: "mui-icon icon-chs_sywx_ic_my", path: "/my"},
+        ]
+      }
+    },
+    methods: {
+      changeActive(index){
+        this.isActive = index;
+      }
+    },
+    filters: {
+      isActive(v1, v2, v3){
+        return v2 == v3 ? v1 + "_s" : v1;
+      }
+    }
+  }
+
+
+</script>
+
+<style>
+
+  /* css reset */
+  body, h1, h2, h3, ul, ol, li, figure, figcaption {
+    margin: 0;
+    padding: 0;
+  }
+
+  h1, h2, h3 {
+    font-weight: normal;
+  }
+
+  ul, ol {
+    list-style: outside none none;
+  }
+
+  a {
+    text-decoration: none;
+  }
+
+  /*区块,图片响应式*/
+  img {
+    display: block;
+    max-width: 100%;
+  }
+
+  #app {
+    width: 100%;
+    background-color: #EDEDED;
+  }
+
+
+  .mui-bar-tab {
+    bottom: 0;
+    display: table;
+    width: 100%;
+    height: 8vh;
+    padding: 0;
+    table-layout: fixed;
+    border-top: 0;
+    border-bottom: 0;
+    -webkit-touch-callout: none;
+  }
+  .mui-bar {
+    position: fixed;
+    z-index: 10;
+    right: 0;
+    left: 0;
+    height: 8vh;
+    /*padding-right: 10px;*/
+    /*padding-left: 10px;*/
+    border-bottom: 0;
+    background-color: #f7f7f7;
+    -webkit-box-shadow: 0 0 1px rgba(0,0,0,.85);
+    box-shadow: 0 0 1px rgba(0,0,0,.85);
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+  }
+
+  .mui-bar-tab .mui-tab-item {
+    display: table-cell;
+    overflow: hidden;
+    width: 1%;
+    height: 8vh;
+    text-align: center;
+    vertical-align: middle;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    color: #929292;
+  }
+  .mui-bar-tab .mui-tab-item .mui-icon {
+    top: 3px;
+    width: 24px;
+    height: 24px;
+    padding-top: 0;
+    padding-bottom: 0;
+  }
+
+  .mui-bar .mui-icon {
+    font-size: 5vh;
+    position: relative;
+    z-index: 20;
+    padding-top: 10px;
+    padding-bottom: 10px;
+  }
+
+  .mui-bar-tab .mui-tab-item.mui-active {
+    color: #FF3E05 !important;
+  }
+
+  .mui-bar-tab .mui-tab-item .mui-icon~.mui-tab-label {
+    font-size: 11px;
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .mui-tab-label {
+    font-size: 2.5vh !important;
+  }
+</style>

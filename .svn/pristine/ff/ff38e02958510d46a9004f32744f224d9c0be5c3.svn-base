@@ -1,0 +1,58 @@
+
+//main.js里只会引入App.vue这个根组件，别的自定义组件在App.vue里引用
+import Vue from 'vue'          //导入vue框架
+import App from './App'        //导入总组件
+import router from './router'  //导入路由插件
+import store from './vuex'     //导入状态管理插件
+// import resource from 'vue-resource'  //导入resource
+
+
+//导入mint-ui框架,包括css(全局注册)
+import mintUi from 'mint-ui'
+Vue.use(mintUi);
+
+//导入mui框架
+// import './assets/mui/css/mui.min.css'
+// import './assets/mui/css/icons-extra.css'
+
+//导入swiper
+import Swiper from './assets/js/swiper-3.4.2.min'
+import './assets/css/swiper-3.4.2.min.css'
+
+//引入字体图标的css文件
+import './assets/css/fonts.css'
+
+
+//使用vue-resource,后面才能调用其方法
+//使用mint-ui
+// Vue.use(resource);
+
+
+
+Vue.config.productionTip = false;    //关闭生产模式下给出的提示
+
+
+//在new Vue实例之前注册，否则报错
+//注册播放记录时间过滤器
+Vue.filter('formatTime', function (time) {
+  return '观看至 '+time;
+});
+//注册集数过滤器
+Vue.filter('formatNumber', function (num) {
+  return '第'+num+'集';
+});
+
+
+new Vue({
+	el: '#app',
+	router,                //引入路由规则
+	store,
+  Swiper,
+	template: '<App/>',    //用这个标签写入#app的div里去
+	components: { App }    //注册使用App组件
+});
+
+
+
+
+

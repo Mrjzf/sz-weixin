@@ -1,0 +1,217 @@
+<template>
+  <div class="templ">
+
+    <!--<LiveHead :tolivehead="tolivehead"></LiveHead>-->
+    <!--<div class="clearfixed"></div>-->
+
+    <!--<router-view></router-view>-->
+
+    <section>
+      <div class="comment">
+        评论({{ commentNum }}条)
+        <div id="dash"></div>
+      </div>
+      <div class="input">
+        <input placeholder="我也来说几句..."/>
+        <span class="icon-chs_sywx_ic_detail_news"></span>
+      </div>
+
+      <ul>
+        <li v-for="(item, index) in comments1">
+          <img src="../../assets/touxiang.png" />
+          <h2>{{item.clientAlias}}<span>{{item.createdTime}}</span></h2>
+          <h1>{{item.commentContent}}</h1>
+          <h3>{{index | formatFloor}}</h3>
+        </li>
+      </ul>
+    </section>
+
+    <div id="footerHeight"></div>
+
+  </div>
+</template>
+
+<script>
+import LiveHead from './LiveHead.vue'
+
+  export default {
+  data: function() {
+    return {
+      commentNum: 0,
+      comments1: [],
+      tolivehead:3,
+      startX:0,
+      endX:0,
+      changeX:0,
+      startY:0,
+      endY:0,
+      changeY:0
+    }
+  },
+  created(){
+    this.getComment();
+  },
+  filters:{
+    formatCommentNum:function (num) {
+
+      return '('+num+'条'+')';
+    },
+    formatFloor:function (num) {
+      return num + 1 +'层';
+    }
+  },
+  components:{
+    LiveHead
+  },
+  methods:{
+
+    //在点击屏幕开始收集坐标数据
+    judge:function (e) {
+      this.startX=e.changedTouches[0].clientX;
+      this.startY=e.changedTouches[0].clientY;
+    },
+    //判断滑动方向,模仿点击事件
+    toNext:function (e) {
+      this.endX=e.changedTouches[0].clientX;
+      this.endY=e.changedTouches[0].clientY;
+      this.changeX=this.startX-this.endX;
+      this.changeY=this.startY-this.endY;
+      if((Math.abs(this.changeX)>25)&&this.changeX>0){
+        //do nothing
+      }else if((Math.abs(this.changeX)>25)&&this.changeX<0&&
+        (Math.abs(this.changeX)>Math.abs(this.changeY))){
+        document.getElementById('show').click();
+      }
+    },
+    getComment(){
+
+//      获取第一个频道评论
+        var channelId = this.$route.query.channelId;
+        var url3 = "/cms/thirdPartyPortalInterface/listComment.service?contentType=cpg_channel&resFormat=json&targetType=mobile&contentId=" + channelId;
+        this.$http.get(url3).then(res => {
+            var data = res.body;
+//            console.log(data.listCommentResponse);
+            this.comments1 = data.listCommentResponse.commentList.comment;
+            this.commentNum = data.listCommentResponse.pageInfo.totalNum;
+          },
+          res => {
+            console.log("错误！" + res);
+          })
+    }
+  }
+};
+
+</script>
+
+<style scoped>
+.clearfixed{
+  height:255px;
+}
+
+section{
+  background-color: #fff;
+  overflow: hidden;
+  margin-top: 49vh;
+}
+/*评论条数  */
+.comment{
+  position: relative;
+  height: 5vh;
+  font-size:16px;
+  font-family: "Microsoft YaHei";
+  color:#3C3C3C;
+  line-height: 5vh;
+  padding-left: 20px;
+  border-bottom: 1px solid #eee;
+}
+.comment #dash{
+  width:4px;
+  height:19px;
+  background-color:#FF3E05;
+  position: absolute;
+  left:8px;
+  top:5px;
+  border-radius: 4px;
+}
+
+
+/*输入框*/
+.input{
+  height: 8vh;
+  text-align: center;
+  line-height: 8vh;
+  border-bottom: 1px solid #eee;
+  position: relative;
+}
+input{
+  border: 0;
+  border-radius: 41px;
+  background-color: #F3F3F3;
+  width:296px;
+  height:5vh;
+  color:#222222;
+  font-size:14px;
+  font-family: "Microsoft Yahei";
+  text-align:center;
+}
+input::-webkit-input-placeholder{
+  color:#222222;
+  font-size:13px;
+  font-family: "Microsoft Yahei";
+}
+/*怎么保证这个图标离字的距离保持一定*/
+.icon-chs_sywx_ic_detail_news{
+  font-size:17px;
+  color:#222222;
+  position: absolute;
+  left:33%;
+  top:20px;
+}
+
+
+/*评论详情  */
+li{
+  position: relative;
+  min-height:62px;
+  border-bottom: 1px solid #eee;
+}
+img{
+  border-radius: 50%;
+  position:absolute;
+  left:17px;
+  top:15px;
+}
+h2{
+  margin:0;
+  padding-left:55px;
+  padding-top: 8px;
+  font-size:12px;
+  color:#979797;
+  font-family: "Microsoft YaHei";
+}
+h2 span{
+  font-size:11px;
+  padding-left: 8px;
+}
+h1{
+  margin:0;
+  padding: 9px 10px 0 55px;
+  font-size:17px;
+  color:#000000;
+  font-family: "Microsoft YaHei";
+}
+h3{
+  margin:0;
+  position: absolute;
+  right:15px;
+  top:16px;
+  font-size:12px;
+  color:#979797;
+  font-family: "Microsoft YaHei";
+}
+
+  #footerHeight {
+    margin-bottom: 9vh;
+  }
+</style>
+

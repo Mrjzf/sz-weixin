@@ -1,0 +1,151 @@
+<template>
+  <div class="templ">
+
+    <!--相对地址获取不到?-->
+    <!--width:100%自适应-->
+    <!--如果360x203视频就变形了-->
+    <!--<video src="http://localhost/test1/vue/1/src/assets/video.mp4"-->
+           <!--width='100%'   ></video>-->
+
+
+
+    <!--先用图片代替-->
+    <img src="../../assets/timg.png" />
+    <span class="icon-chs_sywx_ic_detail_tp"></span>
+    <router-link to="/">
+      <span class="icon-chs_sywx_ic_jt_left"></span>
+    </router-link>
+
+    <header>
+      <ul>
+        <li>
+          <router-link id="channel" to="/live/channel" :class="{active:tolivehead==1}">频道</router-link>
+          <div class="dash" v-show="tolivehead==1"></div>
+        </li>
+        <li>
+          <router-link id="show" to="/live/show" :class="{active:tolivehead==2}">节目单</router-link>
+          <div class="dash" v-show="tolivehead==2"></div>
+        </li>
+        <li>
+          <router-link id="comment" to="/live/comment" :class="{active:tolivehead==3}">评论</router-link>
+          <div class="dash" v-show="tolivehead==3"></div>
+        </li>
+      </ul>
+    </header>
+
+
+    <!--用flash播放需要插件,手机浏览器基本不支持-->
+    <!--<embed src='http://static.youku.com/v1.0.0149/v/swf/loader.swf?VideoIDS=XMTc2MjE2NTc1Mg&quality=high&isAutoPlay=true&winType=adshow'-->
+    <!--quality='high' width='360' height='400' align='middle' allowScriptAccess='always'-->
+    <!--allowFullScreen='true' mode='transparent' type='application/x-shockwave-flash'></embed>-->
+    <router-view></router-view>
+
+
+  </div>
+</template>
+
+<script>
+
+
+
+export default {
+  data: function() {
+    return {
+
+    }
+  },
+  props:["tolivehead"]
+};
+
+</script>
+
+<style scoped>
+
+header{
+  height:51px;
+  border-bottom:2px solid #eee;
+  background-color: #fff;
+}
+img{
+  display: block;
+  max-width: 100%;
+}
+
+
+a{
+  color:#222222;
+  font-size:14px;
+  line-height: 51px;
+  font-family:"Microsoft YaHei";
+}
+li{
+  list-style:none;
+  display: inline-block;
+  width:32.3%;
+  position: relative;
+}
+li:nth-child(1){
+  text-indent: 32px;
+}
+li:nth-child(2){
+  text-align: center;
+}
+li:nth-child(3){
+  text-align:right;
+  padding-right: 33px;
+}
+
+
+
+.dash{
+  width: 17px;
+  height:2px;
+  background-color: #FF3E05;
+  display: inline-block;
+}
+li:nth-child(1) div{
+  position: absolute;
+  left:36px;
+  top:49px;
+}
+li:nth-child(2) div{
+  position: absolute;
+  left:42%;             /* 虽然用的是百分比，还是不能响应式对齐 */
+  top:49px;
+}
+li:nth-child(3) div{
+  position: absolute;
+  right:38px;
+  top:49px;
+}
+
+.active{
+  font-size:15px;
+  color:#FF3E05;
+}
+
+
+/*字体图标样式  */
+.icon-chs_sywx_ic_detail_tp,.icon-chs_sywx_ic_jt_left{
+  width: 31px;
+  height: 31px;
+  color:#fff;
+  text-align: center;
+  line-height: 31px;
+  border-radius: 50%;
+  background-color: #000;
+  font-size:20px;
+  opacity: 0.3;
+}
+.icon-chs_sywx_ic_jt_left{
+  position: absolute;
+  left:16px;
+  top:9px;
+}
+.icon-chs_sywx_ic_detail_tp{
+  position: absolute;
+  right:16px;
+  top:9px;
+}
+</style>
+

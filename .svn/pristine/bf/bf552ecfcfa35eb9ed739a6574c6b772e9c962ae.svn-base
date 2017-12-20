@@ -1,0 +1,405 @@
+<template>
+
+  <!--templ不是整个页面，而是由其中的内容撑开的-->
+  <div id="searchMsg">
+
+    <div id="searchList">
+      <span :class="{dash:dashIndex==index}" v-for="(item, index) in search_List" @click="dashChange(index)">{{ item.name }}</span>
+    </div>
+
+    <div v-if="dashIndex==0" id="vpg_content">
+      <div class="everyBlock" v-for="(item, index) in search_Vpg" @click="goCon(item.contentId, item.showType, item.aaa);">
+        <img :src="'/cms/res/posters/mobile/' + item.poster" alt="">
+        <p class="name">{{item.contentName}}</p>
+      </div>
+    </div>
+
+    <div v-else-if="dashIndex==1" id="vpg_content2">
+      <div class="everyBlock" v-for="(item, index) in search_Vpg" @click="">
+        <img :src="'/cms/' + item.poster" alt="">
+        <p class="name">{{item.contentName}} : {{item.currProgramName}}</p>
+      </div>
+    </div>
+
+    <div v-else-if="dashIndex==2" id="vpg_content2">
+      <div class="everyBlock" v-for="(item, index) in search_Vpg" @click="">
+        <img :src="'/cms/' + item.poster" alt="">
+        <p class="name">{{item.programName}}</p>
+      </div>
+    </div>
+
+
+    <div id="cpg_channel" v-show="isChannelShow">
+        <h1>频道列表</h1>
+      </div>
+    <div id="cpg_channel_content" v-show="isChannelShow">
+        <div class="everyBlock" v-for="(item, index) in search_Cpg_Channel" @click="goCon(item.contentId)">
+          <!--@click="goContent(item.id, item.type, item.aaa)"-->
+          <img v-if="item.screenFlag=='tv,mobile'" :src="'/cms/' + item.poster" alt="">
+          <img v-else :src="'/cms/res/mobile/' + item.poster" alt="">
+          <p class="name">{{item.contentName}}</p>
+        </div>
+      </div>
+
+    <div id="cpg_program" v-show="isProgramShow">
+        <h1>节目列表</h1>
+      </div>
+    <div id="cpg_program_content" v-show="isProgramShow">
+        <div class="everyBlock" v-for="(item, index) in search_Cpg_Program" @click="goCon(item.contentId)">
+          <!--@click="goContent(item.id, item.type, item.aaa)"-->
+          <img :src="'/cms/res/mobile/' + item.poster" alt="">
+          <p class="name">{{item.contentName}}</p>
+        </div>
+      </div>
+
+    <div id="nothing" v-show="isShowNoting">
+        <img src="../../assets/images/nothing.png" alt="">
+        <p>搜索暂无结果~</p>
+      </div>
+
+  </div>
+
+</template>
+
+<script>
+  import { Toast } from 'mint-ui';
+
+  export default {
+    data: function () {
+      return {
+        search_List:[
+          {name: "点播列表"},
+          {name: "直播列表"},
+          {name: "回看列表"}
+        ],
+        search_Vpg: [],
+        search_Cpg_Channel: [],
+        search_Cpg_Program: [],
+        isVpgShow: false,
+        isChannelShow: false,
+        isProgramShow: false,
+        isShowNoting: false,
+        toast: null,
+        dashIndex: 0,
+        key: ""
+      }
+    },
+    created: function () {
+//      this.getSearch();
+    },
+    updated(){
+      this.change();
+    },
+    methods: {
+      dashChange(index) {
+        this.getSearch(this.key, index);
+        this.dashIndex = index;
+      },
+      goback: function () {
+        this.$router.go(-1);
+      },
+      getSearch(key, i){
+        if (this.dashIndex == i) {
+          return
+        }
+        this.search_Vpg = [];
+        this.key = key;
+        this.toast = Toast("加载中...");
+        if (i == undefined) {
+          i = 0;
+        }
+        var url;
+        switch (i) {
+          case 0:
+            url = "/cms/thirdPartyPortalInterfaceV2/commonSearchVpg.service?clientId=" + this.$store.state.openid + "&size=&key=" + this.key;
+            break;
+          case 1:
+            url = "/cms/thirdPartyPortalInterfaceV2/commonSearchLive.service?clientId=" + this.$store.state.openid + "&size=&key=" + this.key;
+            break;
+          case 2:
+            url = "/cms/thirdPartyPortalInterfaceV2/commonSearchProgram.service?clientId=" + this.$store.state.openid + "&size=&key=" + this.key;
+            break;
+        }
+
+        this.$http.get(url).then(res => {
+          var data = res.body;
+          if (data.code == "0") {
+            this.search_Vpg = data.contentList;
+            this.isShowNoting = false;
+
+            if (this.search_Vpg.length == 0) {
+              this.isShowNoting = true;
+            }
+          } else {
+            this.isShowNoting = true;
+          }
+          this.toast.close();
+        }, res => {
+          console.log("错误！" + res);
+        })
+      },
+      change(){
+        for (var i = 0; i < this.search_Vpg.length; i++) {
+          if (this.search_Vpg[i].showType == "package-title") {
+            this.search_Vpg[i].aaa = "zhgq";
+          } else if (this.search_Vpg[i].showType == "package-chapter") {
+            this.search_Vpg[i].showType = "package";
+          }
+        }
+      },
+      goCon(id, type, isZhgq){
+        this.$router.push({path: 'detail', query: {id: id, type: type, isZhgq: isZhgq}});
+      }
+    }
+  };
+
+</script>
+
+<style scoped>
+
+  #searchList {
+    width: 100%;
+    height: 8vh;
+  }
+  #searchList span {
+    display: block;
+    width: 33.333333%;
+    height: 8vh;
+    line-height: 8vh;
+    text-align: center;
+    float: left;
+    border-bottom: 1px solid #e5e5e5;
+  }
+  .dash {
+    color: #ff3e05;
+    border-bottom: 2px solid #ff3e05 !important;
+  }
+
+  h1, p {
+    margin: 0;
+    line-height: 100%;
+  }
+
+  /* 头部  */
+  header {
+    background-color: #FF3E05;
+    height: 49px;
+  }
+
+  header input {
+
+    height: 30px;
+    line-height: 31px;
+    width: 60%;
+    border: 0;
+    border-radius: 4px;
+    margin: 8px 0 0 10%;
+    position: relative;
+    padding-left: 9%;
+  }
+
+  input::-webkit-input-placeholder {
+    color: #999;
+    font-size: 14px;
+    font-family: "Microsoft YaHei";
+  }
+
+  .icon-chs_sywx_ic_search {
+    position: absolute;
+    left: 14%;
+    top: 18px;
+    font-size: 18px;
+    color: #FF3E05;
+    z-index: 9999;
+  }
+
+  header span {
+    color: #fff;
+    font-family: "Microsoft Yahei";
+    font-size: 13px;
+
+  }
+  header .goback {
+    position: absolute;
+    top: 18px;
+    left: 3%;
+    line-height: 100%;
+  }
+  header .search {
+    position: absolute;
+    top: 18px;
+    right: 4.5%;
+    line-height: 100%;
+  }
+
+  /*搜索记录 */
+  #record, #hot, #vpg, #cpg_channel, #cpg_program {
+    background-color: #fff;
+    margin-top: 8px;
+    height: 48px;
+    border-bottom: 1px solid #eee;
+  }
+
+  #record h1, #hot h1, #vpg h1, #cpg_channel h1, #cpg_program h1 {
+    display: inline-block;
+    margin: 16px 0 0 4.5%;
+    font-weight: bold;
+    font-size: 16px;
+    font-family: "Microsoft Yahei";
+  }
+
+  #record p {
+    float: right;
+    margin: 14px 4.5% 0 0;
+    display: inline-block;
+    color: #FF3E05;
+    font-size: 14px;
+    font-family: "Microsoft Yahei";
+  }
+
+  #record-content {
+    background-color: #fff;
+    font-family: "Microsoft Yahei";
+    height: 66px;
+    color: #222222;
+    font-size: 14px;
+  }
+
+  #record-content p {
+    display: inline-block;
+    width: 50%;
+    padding-left: 4.5%;
+    margin: 12px 0 0 0;
+    font-size: 13px;
+    box-sizing: border-box;
+  }
+
+  #record-content p:nth-child(3) {
+    margin-top: 16px;
+  }
+
+  #record-content p:nth-child(4) {
+    margin-top: 16px;
+  }
+
+  /*热门记录*/
+  #hot-content {
+    background-color: #fff;
+    height: 200px;
+    font-family: "Microsoft Yahei";
+  }
+
+  #hot-content li {
+    display: inline-block;
+    padding: 12px 0 0 4.5%;
+    width: 45%;
+  }
+
+  #hot-content li p {
+    display: inline-block;
+    font-size: 13px;
+    position: relative;
+    top: 2px;
+  }
+
+  #hot-content li span {
+    display: inline-block;
+    text-align: center;
+    line-height: 16px;
+    margin-right: 2.2%;
+    width: 16px;
+    height: 16px;
+    border-radius: 3px;
+    font-size: 9px;
+    background-color: #ccc;
+    color: #fff;
+  }
+
+  #hot-content li span.firstHot {
+    background-color: #FF443F;
+  }
+
+  #hot-content li span.secondHot {
+    background-color: #FF903B;
+  }
+
+  #hot-content li span.thirdHot {
+    background-color: #FFC535;
+  }
+
+  img {
+    width: 100%;
+    border-radius: 5px;
+  }
+
+  /*每小块*/
+  #vpg_content .everyBlock {
+    width: 32%;
+    float: left;
+    margin-right: 2%;
+  }
+  @media screen and (min-width: 320px) {
+    #vpg_content .everyBlock img {
+      height: 175px;
+    }
+  }
+  @media screen and (max-width: 321px) {
+    #vpg_content .everyBlock img {
+      height: 138px;
+    }
+  }
+  /*.everyBlock img {*/
+    /*min-height: 180px;*/
+  /*}*/
+
+  #vpg_content .everyBlock:nth-child(3n) {
+    margin-right: 0;
+  }
+  .name {
+    width: 100%;
+    height: 12px;
+    /*clear: both;*/
+    white-space:nowrap;
+    text-overflow:ellipsis;
+    overflow:hidden;
+    font-size: 12px;
+    margin: 4px 0 4px 0;
+    text-align: center;
+    color: #212121;
+    padding-top: 5px;
+  }
+  #vpg_content, #cpg_channel_content, #cpg_program_content {
+    width: 96vw;
+    overflow: hidden;
+    background-color: #fff;
+    padding: 2vw 2vw 2vw 2vw;
+  }
+
+  #vpg_content2 {
+    width: 96vw;
+    padding: 2vw;
+  }
+  #vpg_content2 .everyBlock {
+    width: 47vw;
+    float: left;
+  }
+  #vpg_content2 .everyBlock:nth-child(odd) {
+    margin-right: 2vw;
+  }
+
+  #nothing {
+    margin-top: 20vh;
+    background-color: #fff;
+  }
+  #nothing img {
+    width: 40vw;
+    margin: 0 auto;
+  }
+  #nothing p {
+    margin-top: 10px;
+    text-align: center;
+    font-size: 16px;
+  }
+
+</style>
+

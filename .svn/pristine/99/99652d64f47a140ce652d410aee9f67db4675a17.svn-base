@@ -1,0 +1,118 @@
+import Vue from 'vue'
+import Router from 'vue-router'
+
+//引入推荐
+// import Recommend from '@/components/Recommend/Recommend.vue'
+const Recommend = resolve => require(['@/components/Recommend/Recommend.vue'], resolve);
+
+//引入VOD相关
+const VOD = resolve => require(['@/components/VOD/VOD.vue'], resolve);
+const VOD_Category_Con = resolve => require(['@/components/VOD/VOD_Category_Con/VOD_Category_Con.vue'], resolve);
+
+//引入遥控器
+const RC = resolve => require(['@/components/RC/RC.vue'], resolve);
+
+//引入直播
+const Channel = resolve => require(['@/components/live/Channel.vue'], resolve);
+const Comment = resolve => require(['@/components/live/Comment.vue'], resolve);
+const Show = resolve => require(['@/components/live/Show.vue'], resolve);
+
+//引入搜索
+const Search = resolve => require(['@/components/search/Search.vue'], resolve);
+
+//引入详情
+const Detail = resolve => require(['@/components/detail/Detail.vue'], resolve);
+
+//引入我的
+const My = resolve => require(['@/components/my/My.vue'], resolve);
+
+//引入播放记录
+const RecordZb = resolve => require(['@/components/record/RecordZb.vue'], resolve);
+const RecordDb = resolve => require(['@/components/record/RecordDb.vue'], resolve);
+const RecordHk = resolve => require(['@/components/record/RecordHk.vue'], resolve);
+
+
+Vue.use(Router);
+
+
+export default new Router({
+  linkActiveClass:'mui-active',
+	routes: [
+
+    //search
+    {
+      path: '/search',
+      name: 'Search',
+      component: Search
+    },
+
+
+	  //初始
+    { path: '/', redirect:'/Recommend'},
+    //推荐
+    { path: '/Recommend', name: 'Recommend', component: Recommend},
+    //VOD相关
+    { path: '/VOD', name: 'VOD', component: VOD},
+    { path: '/VODCategoryCon/:typeName', name: 'VOD_Category_Con', component: VOD_Category_Con},
+    //RC
+    { path: '/RC', name: 'RC', component: RC},
+
+    //detail
+    {
+      path: '/detail',
+      name: 'Detail',
+      component: Detail
+    },
+
+    //live
+    {
+      path: '/live/channel',
+      name: 'Channel',
+      component: Channel
+    },
+    {
+      path: '/live/comment',
+      name: 'Comment',
+      component: Comment
+    },
+    {
+      path: '/live/show',
+      name: 'Show',
+      component: Show
+    },
+
+
+    //my
+    {
+      path: '/my',
+      name: 'My',
+      component: My
+    },
+
+
+    //record
+		{
+			path: '/record/recordzb',
+			name: 'RecordZb',
+			component: RecordZb
+    },
+    {
+      path: '/record/recorddb',
+      name: 'RecordDb',
+      component: RecordDb
+    },
+    {
+      path: '/record/recordhk',
+      name: 'RecordHk',
+      component: RecordHk
+    }
+	],
+  saveScrollPosition: function () {
+    console.log(2222222);
+  },
+  scrollBehavior (to, from, savedPosition) {
+    console.log(1);
+    return { x: 0, y: 0 };
+  }
+})
+

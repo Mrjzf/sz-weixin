@@ -1,0 +1,153 @@
+<template>
+  <div class="templ">
+
+    <!--向head发送数据-->
+    <RecordHead :torecordhead="torecordhead"></RecordHead>
+    <div class="clearFixed"></div>
+
+    <section @touchend="toNext" @touchstart="judge">
+      <div class="time">{{time}}</div>
+
+      <ul>
+        <li class="zb">
+          <img src="../../assets/dianshitai2.png" alt='北京电视台'/>
+          <hgroup>
+            <h1>{{tv}}{{clarity | formatClarity}}</h1>
+            <h2>{{play}}<span>{{number | formatNum}}</span></h2>
+          </hgroup>
+        </li>
+      </ul>
+    </section>
+
+    <div id="footerHeight"></div>
+
+  </div>
+</template>
+
+<script>
+  import RecordHead from './RecordHead.vue';
+
+
+  export default {
+    data: function () {
+      return {
+        time: '2017/04/18 星期二',
+        tv: '北京卫视',
+        clarity: '高清',
+        play: '甄嬛传',
+        number: '32',
+        torecordhead: 1,
+        startX: 0,
+        endX: 0,
+        changeX: 0,
+        startY: 0,
+        endY: 0,
+        changeY: 0
+      }
+    },
+    filters: {
+      formatClarity: function (cla) {
+        return '(' + cla + ')';
+      },
+      formatNum: function (num) {
+        return num + '集';
+      }
+    },
+    components: {
+      RecordHead
+    },
+    methods: {
+
+      //在点击屏幕开始收集坐标数据
+      judge: function (e) {
+        this.startX = e.changedTouches[0].clientX;
+        this.startY = e.changedTouches[0].clientY;
+      },
+      //判断滑动方向,模仿点击事件
+      toNext: function (e) {
+        this.endX = e.changedTouches[0].clientX;
+        this.endY = e.changedTouches[0].clientY;
+        this.changeX = this.startX - this.endX;
+        this.changeY = this.startY - this.endY;
+        if ((Math.abs(this.changeX) > 25) && this.changeX > 0 &&
+          (Math.abs(this.changeX) > Math.abs(this.changeY))) {
+          document.getElementById('huikan').click();
+        } else if ((Math.abs(this.changeX) > 25) && this.changeX < 0) {
+          //do nothing
+        }
+      },
+      asd() {
+        var url = "/cms/thirdPartyPortalInterface/getPlayList.service?clientId=" + this.$store.state.userID + "&busiType=all&terminalType=mobile&resFormat=json";
+        this.$http.get(url).then(res => {
+          var data = res.body;
+          console.log(data);
+        }, res => {
+          console.log("错误");
+        })
+      }
+    },
+    created() {
+      this.asd();
+    }
+  };
+
+</script>
+
+<style scoped>
+  .clearFixed {
+    height: 52px;
+  }
+
+  .time {
+    font-family: "Microsoft YaHei";
+    background-color: #EDEDED;
+    color: #999999;
+    line-height: 31px;
+    font-size: 13px;
+    text-indent: 11px;
+    height: 31px;
+  }
+
+  .zb {
+    position: relative;
+    height: 80px;
+    border-bottom: 1px solid #eee;
+    background-color: #fff;
+  }
+
+  img {
+    position: absolute;
+    top: 16px;
+    left: 16px;
+    border: 1px solid #eee;
+  }
+
+  hgroup {
+    position: absolute;
+    left: 80px;
+    top: 21px;
+  }
+
+  hgroup h1 {
+    margin: 0;
+    font-weight: normal;
+    font-size: 16px;
+    font-family: "Microsoft YaHei";
+    color: #3C3C3C;
+
+  }
+
+  hgroup h2 {
+    margin: 9px 0 0 0;
+    font-weight: normal;
+    font-family: "Microsoft YaHei";
+    font-size: 14px;
+    color: #999;
+  }
+
+  #footerHeight {
+    margin-bottom: 50px;
+  }
+
+</style>
+

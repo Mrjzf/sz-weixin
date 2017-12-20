@@ -1,0 +1,411 @@
+<template>
+  <div id="vod">
+
+    <top></top>
+
+    <div id="option">
+      <div class="swiper-container">
+        <div class="swiper-wrapper">
+          <div :class="'swiper-slide' | isActive(index, $store.state.VOD_index)" v-for="(item, index) in typeList" @click="isActiveChange(index); goTop(); changeUrl(item.categoryId, index);">
+            {{item.name}}
+            <span class="line" v-show="$store.state.VOD_index==index"></span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <mt-loadmore :top-method="getCon"
+                 :bottom-method="getNextPage"
+                 @top-status-change="handleTopChange1"
+                 @bottom-status-change="handleTopChange2"
+                 :bottomAllLoaded="allLoaded"
+                 ref="loadmore">
+
+      <div>
+        <banner :data="bannerList"></banner>
+
+        <div id="type" v-if="$route.query.id==9512">
+          <div class="four_type">
+            <router-link to="/VODCategoryCon/guzhuang" class="four_type_a">古装</router-link>
+          </div>
+          <div class="four_type">
+            <router-link to="/VODCategoryCon/jiating" class="four_type_a">家庭</router-link>
+          </div>
+          <div class="four_type">
+            <router-link to="/VODCategoryCon/aiqing" class="four_type_a">爱情</router-link>
+          </div>
+          <div class="four_type">
+            <router-link to="/VODCategoryCon/jujiall" class="four_type_a">全部 ></router-link>
+          </div>
+        </div>
+        <div id="type" v-else-if="$route.query.id==9937">
+          <div class="four_type">
+            <router-link to="/VODCategoryCon/guzhuang" class="four_type_a">古装</router-link>
+          </div>
+          <div class="four_type">
+            <router-link to="/VODCategoryCon/jiating" class="four_type_a">家庭</router-link>
+          </div>
+          <div class="four_type">
+            <router-link to="/VODCategoryCon/aiqing" class="four_type_a">爱情</router-link>
+          </div>
+          <div class="four_type">
+            <router-link to="/VODCategoryCon/jujiall" class="four_type_a">全部 ></router-link>
+          </div>
+        </div>
+        <div id="type" v-else>
+          <div class="four_type">
+            <router-link to="/VODCategoryCon/xiju" class="four_type_a">喜剧</router-link>
+          </div>
+          <div class="four_type">
+            <router-link to="/VODCategoryCon/dongzuo" class="four_type_a">动作</router-link>
+          </div>
+          <div class="four_type">
+            <router-link to="/VODCategoryCon/kehuan" class="four_type_a">科幻</router-link>
+          </div>
+          <div class="four_type">
+            <router-link to="/VODCategoryCon/all" class="four_type_a">全部 ></router-link>
+          </div>
+        </div>
+
+        <VOD_conList :data="VODcon_List"></VOD_conList>
+      </div>
+
+      <div slot="top" class="mint-loadmore-top">
+        <div v-show="topStatus !== 'loading'" >
+          <span :class="{ 'rotate': topStatus === 'drop' }">↓</span>
+          <span v-if="topStatus === 'pull'">&nbsp;下拉刷新</span>
+          <span v-else>&nbsp;释放刷新</span>
+        </div>
+        <span v-show="topStatus === 'loading'">Loading...</span>
+      </div>
+
+      <div slot="bottom" class="mint-loadmore-bottom" v-show="pageisOK">
+        <div v-show="bottomStatus !== 'loading'" >
+          <span :class="{ 'rotate': bottomStatus === 'drop' }">↑</span>
+          <span v-if="bottomStatus === 'pull'">&nbsp;上拉加载</span>
+          <span v-else>&nbsp;释放加载</span>
+        </div>
+        <span v-show="bottomStatus === 'loading'">Loading...</span>
+      </div>
+      <div id="dataEnd" v-show="allLoaded">没有更多了！</div>
+    </mt-loadmore>
+
+
+    <!--<div id="footerHeight"></div>-->
+
+  </div>
+</template>
+
+<script>
+  import top from '@/components/All_Public/Top.vue'
+  import VOD_conList from '@/components/VOD/VOD_Public/VOD_con.vue'
+  import banner from '@/components/VOD/VOD_banner.vue'
+  import { Toast } from 'mint-ui';
+
+  export default {
+    data(){
+      return {
+        pageisOK: false,
+//        isActive: 0,
+        typeList: [],
+        bannerList: [],
+        VODcon_List: [],
+        isInit: true,
+        topStatus: "",
+        bottomStatus: "",
+        allLoaded: false,
+        pageNum: 1,
+        totalPage: 0,
+        toast: null
+      }
+    },
+    components: {
+      top,
+      VOD_conList,
+      banner
+    },
+    created(){
+      this.toast = Toast("加载中...");
+      this.getOption();
+      this.getBanner();
+      this.getCon();
+    },
+    mounted(){
+      this.comeFromRec();
+    },
+    watch: {
+      '$route': 'getCon'
+    },
+    updated(){
+      this.Swiper();
+//      this.Swiper2();
+      this.change();
+    },
+    methods: {
+      Swiper(){
+        if (this.typeList.length != 0) {
+          new Swiper('#option .swiper-container', {
+            slidesPerView: 5,
+            spaceBetween: 0,
+            freeMode: true,
+          });
+        }
+      },
+      Swiper2(){
+        if (this.bannerList.length != 0) {
+          new Swiper('#banner .swiper-container', {
+            pagination: '.swiper-pagination',
+            paginationClickable: true,
+            autoplay: 4000,
+            autoplayDisableOnInteraction: false
+          });
+        }
+      },
+      isActiveChange(index){
+        this.$store.commit("VODindex", index);
+//        this.isActive = this.$store.state.VOD_index;
+//        this.isActive = index;
+      },
+      getOption(){
+        var url = "/mobileapp/interfaceservice/listCategory?parentId=9506&resFormat=json";
+        this.$http.get(url).then(res => {
+            var data = res.body.response.categorieList.cateogry;
+            this.typeList = data;
+          },
+          res => {
+            console.log("错误" + res);
+          })
+
+//        var url2 = "/mobileapp/interfaceservice/listVideo?categoryId=9509&pageNum=1&pageSize=15&sortBy=time&scope=all&resFormat=json";
+//        this.$http.get(url2).then(res => {
+//            var data = res.body.response.videoList.video;
+//            this.VODcon_List = data;
+//        },
+//        res => {
+//          console.log("错误" + res);
+//        })
+      },
+      getCon(){
+        this.pageNum = 1;
+        var categoryId = this.$route.query.id;
+        var url = "/mobileapp/interfaceservice/listVideo?categoryId=" + categoryId + "&pageNum=1&pageSize=15&sortBy=time&scope=all&resFormat=json";
+
+        this.$http.get(url).then(res => {
+            var data = res.body.response.videoList.video;
+            this.VODcon_List = data;
+            if (categoryId == 9513) {
+              for (var i = 0; i < this.VODcon_List.length; i++) {
+                this.VODcon_List[i].aaa = "zhgq";
+              }
+            }
+            this.totalPage = res.body.response.pageInfo.totalPage;
+            this.$refs.loadmore.onTopLoaded();
+            this.pageisOK = true;
+            this.allLoaded = false;
+            this.toast.close();
+          },
+          res => {
+            console.log("错误" + res);
+          })
+      },
+      getNextPage(){
+        this.pageNum += 1;
+        var categoryId = this.$route.query.id;
+        var url = "/mobileapp/interfaceservice/listVideo?categoryId=" + categoryId + "&pageNum=" + this.pageNum + "&pageSize=15&sortBy=time&scope=all&resFormat=json";
+
+        if (this.pageNum > this.totalPage) {
+          this.allLoaded = true;
+          return
+        }
+        this.$http.get(url).then(res => {
+            var data = res.body.response.videoList.video;
+            this.VODcon_List = this.VODcon_List.concat(data);
+            if (categoryId == 9513) {
+              for (var i = 0; i < this.VODcon_List.length; i++) {
+                this.VODcon_List[i].aaa = "zhgq";
+              }
+            }
+
+            this.$refs.loadmore.onBottomLoaded();
+          },
+          res => {
+            console.log("错误" + res);
+          })
+      },
+      getBanner(){
+        var url = "/cms/thirdPartyPortalInterface/getHomePageWeiXinFeature.service?resFormat=json&featureType=DianYingDaTu";
+        this.$http.get(url).then(res => {
+            var data = res.body.featureList[0].dataList;
+            this.bannerList = data;
+          },
+          res => {
+            console.log("错误" + res);
+          })
+      },
+      goTop(){
+        if (document.body.scrollTop > 0) {
+          var timer = setInterval(function () {
+            document.body.scrollTop -= 50;
+            if (document.body.scrollTop <= 0) {
+              document.body.scrollTop = 0;
+              clearInterval(timer);
+            }
+          }, 15)
+        } else {
+          return
+        }
+      },
+      goContent(id, type, isZhgq){
+        this.$router.push({path: 'detail', query: {id: id, type: type, isZhgq: isZhgq}});
+      },
+      change(){
+        for (var i = 0; i < this.bannerList.length; i++) {
+          if (this.bannerList[i].contentType == "vpg_video") {
+            this.bannerList[i].contentType = "movie";
+          } else if (this.bannerList[i].contentType == "vpg_package") {
+            this.bannerList[i].contentType = "package";
+          }
+        }
+      },
+      changeUrl(id, index){
+        this.$router.push({path: 'VOD', query: {id: id, index: index}});
+      },
+      comeFromRec(){
+        var i = 0;
+        if (this.$route.query.wf == "gqdytj") {
+          this.isInit = false;
+          i = 0;
+        } else if (this.$route.query.wf == "gqjjtj") {
+          this.isInit = false;
+          i = 2;
+        } else if (this.$route.query.wf == "gqzhtj") {
+          this.isInit = false;
+          i = 3;
+        }
+
+        if (this.isInit == true) {
+          if (this.$route.query.index){
+            this.isActiveChange(this.$route.query.index);
+          } else {
+            this.isActiveChange(0);
+          }
+        } else {
+          this.isActiveChange(i);
+        }
+      },
+      handleTopChange1(status){
+        this.topStatus = status;
+      },
+      handleTopChange2(status){
+        this.bottomStatus = status;
+      }
+    },
+    filters: {
+      isActive(v1, v2, v3){
+        return v2 == v3 ? v1 + " isactive" : v1;
+      }
+    }
+  }
+</script>
+
+<style scoped>
+  img {
+    min-height: 156px;
+  }
+  .isactive {
+    color: #FF3E05 !important;
+  }
+
+  #option {
+    width: 100%;
+    position: fixed;
+    z-index: 10;
+    top: 0;
+  }
+  #option .swiper-container {
+    width: 100%;
+    height: 6vh;
+    background-color: #fff;
+    text-align: center;
+    margin-top: 8vh;
+  }
+  #option .swiper-slide {
+    line-height: 40px;
+    font-size: 14px;
+    color: #222222;
+  }
+  #option .swiper-container .swiper-slide .line {
+    display: block;
+    width: 18px;
+    height: 3px;
+    background-color: #FF3E05;
+    margin: 0 auto;
+    margin-top: -3px;
+    /*display: none;*/
+  }
+
+  .mint-loadmore {
+    width: 100%;
+    margin-top: 14vh;
+    padding-bottom: 8.5vh;
+  }
+  .mint-loadmore-bottomhide {
+    display: none;
+  }
+  .mint-loadmore-top span, .mint-loadmore-bottom span {
+    display: inline-block;
+    vertical-align: middle;
+    transition: all .25s;
+  }
+
+  .rotate {
+    transform: rotate(180deg);
+  }
+
+
+  #banner {
+    width: 100%;
+  }
+
+  #type {
+    width: 100%;
+    height: 40px;
+    background-color: #fff;
+    margin-bottom: 8px;
+  }
+  #type .four_type {
+    width: 25%;
+    height: 40px;
+    float: left;
+    text-align: center;
+
+  }
+  #type .four_type:last-child .four_type_a {
+    background-color: #FF3E05;
+    color: white;
+    border: 0;
+  }
+  #type .four_type .four_type_a {
+    display: block;
+    width: 80%;
+    height: 25px;
+    line-height: 25px;
+    margin: 0 auto;
+    margin-top: 7.5px;
+    border: 1px solid #DDDDDD;
+    font-size: 14px;
+    color: #AAAAAA;
+    border-radius: 15px;
+  }
+  #dataEnd {
+    width: 100%;
+    height: 50px;
+    background-color: #e3e3e3;
+    text-align: center;
+    line-height: 50px;
+  }
+
+  #footerHeight {
+    margin-bottom: 9vh;
+  }
+</style>

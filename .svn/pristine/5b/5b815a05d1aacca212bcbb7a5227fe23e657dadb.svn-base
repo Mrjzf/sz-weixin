@@ -1,0 +1,321 @@
+<template>
+  <div id="recommend">
+
+    <top></top>
+
+    <!--<div id="bigbox">-->
+      <!--&lt;!&ndash; Swiper &ndash;&gt;-->
+      <!--<div class="swiper-container">-->
+        <!--<div id="tips" :class="isTipsShow">-->
+          <!--下拉刷新-->
+        <!--</div>-->
+        <!--<div class="swiper-wrapper">-->
+          <!--<div class="swiper-slide">-->
+
+            <!--<div class="TJDT">-->
+              <!--<div class="swiper-container">-->
+                <!--<div class="swiper-wrapper">-->
+                  <!--<div class="swiper-slide" v-for="(item, index) in banner_List" :key="item.id">-->
+                    <!--<img :src="item.poster | imgChange" alt=""-->
+                         <!--@click="goContent(item.contentId, item.contentType);">-->
+                  <!--</div>-->
+                <!--</div>-->
+                <!--&lt;!&ndash; Add Pagination &ndash;&gt;-->
+                <!--<div class="swiper-pagination"></div>-->
+              <!--</div>-->
+
+              <!--&lt;!&ndash;<swiper :options="swiperOption">&ndash;&gt;-->
+              <!--&lt;!&ndash;<swiper-slide v-for="(item, index) in banner_List" :key="item.id">&ndash;&gt;-->
+              <!--&lt;!&ndash;<img :src="'/cms/res/mobilePoster/' + item.poster" alt="">&ndash;&gt;-->
+              <!--&lt;!&ndash;</swiper-slide>&ndash;&gt;-->
+              <!--&lt;!&ndash;<div class="swiper-pagination" slot="pagination"></div>&ndash;&gt;-->
+              <!--&lt;!&ndash;</swiper>&ndash;&gt;-->
+
+            <!--</div>-->
+
+      <mt-loadmore :top-method="getMsg" @top-status-change="handleTopChange" ref="loadmore">
+        <div>
+          <banner :data="banner_List"></banner>
+          <reacommend1 fromReacommend="基本频道推荐" :data="JBPDTJ_List"></reacommend1>
+          <reacommend1 fromReacommend="付费频道推荐" :data="FFPDTJ_List"></reacommend1>
+          <reacommend2 :data="ZJTJ_List"></reacommend2>
+          <reacommend3 fromReacommend="高清电影推荐" :data="GQDYTJ_List"></reacommend3>
+          <reacommend3 fromReacommend="高清剧集推荐" :data="GQJJTJ_List"></reacommend3>
+          <reacommend3 fromReacommend="综合高清推荐" :data="ZHGQTJ_List"></reacommend3>
+        </div>
+        <div slot="top" class="mint-loadmore-top">
+          <div v-show="topStatus !== 'loading'" >
+            <span :class="{'rotate': topStatus === 'drop'}">↓</span>
+            <span v-if="topStatus === 'pull'">&nbsp;下拉刷新</span>
+            <span v-else>&nbsp;释放刷新</span>
+          </div>
+          <span v-show="topStatus === 'loading'">Loading...</span>
+        </div>
+      </mt-loadmore>
+
+
+          <!--</div>-->
+        <!--</div>-->
+      <!--</div>-->
+
+    <!--</div>-->
+
+
+  </div>
+</template>
+
+<script>
+
+  import reacommend1 from '@/components/Recommend/Recommend_Public/Recommend1.vue'
+  import reacommend2 from '@/components/Recommend/Recommend_Public/Recommend2.vue'
+  import reacommend3 from '@/components/Recommend/Recommend_Public/Recommend3.vue'
+  import top from '@/components/All_Public/Top.vue'
+  import banner from '@/components/VOD/VOD_banner.vue'
+  import '@/assets/js/md5.min'
+  import '@/assets/js/utils'
+  import { Toast } from 'mint-ui';
+
+  export default {
+    data(){
+      return {
+        banner_List: [],
+        JBPDTJ_List: [],
+        FFPDTJ_List: [],
+        ZJTJ_List: [],
+        GQDYTJ_List: [],
+        GQJJTJ_List: [],
+        ZHGQTJ_List: [],
+        isTipsShow: "tipsHide",
+        topStatus: "",
+        toast: null
+      }
+    },
+    components: {
+      reacommend1,
+      reacommend2,
+      reacommend3,
+      top,
+      banner
+    },
+    created(){
+      this.toast = Toast("加载中...");
+      this.getMsg();
+      this.getUrl();
+//      this.login();
+    },
+    updated(){
+      this.Swiper();
+      this.change();
+//      this.Swiper2();
+      this.toast.close();
+    },
+    mounted() {
+      this.$store.commit("isAppShow", true);
+    },
+    destroyed() {
+      this.$store.commit("isAppShow", false);
+    },
+    computed: {},
+    methods: {
+      getMsg(){
+        var url = "/cms/thirdPartyPortalInterface/getHomePageWeiXinFeature.service?resFormat=json";
+        this.$http.get(url).then(res => {
+            this.list = res.body.featureList[0].dataList;
+            for (var i = 0; i < res.body.featureList.length; i++) {
+              if (res.body.featureList[i].type == "TuiJianDaTu") {
+                this.banner_List = res.body.featureList[i].dataList;
+              }
+              else if (res.body.featureList[i].type == "JiBenPinDaoTuiJian") {
+                this.JBPDTJ_List = res.body.featureList[i].dataList;
+              }
+              else if (res.body.featureList[i].type == "FuFeiPinDaoTuiJian") {
+                this.FFPDTJ_List = res.body.featureList[i].dataList;
+              }
+              else if (res.body.featureList[i].type == "ZhuanJiTuiJian") {
+                this.ZJTJ_List = res.body.featureList[i].dataList;
+              }
+              else if (res.body.featureList[i].type == "GaoQingDianYingTuiJian") {
+                this.GQDYTJ_List = res.body.featureList[i].dataList;
+              }
+              else if (res.body.featureList[i].type == "GaoQingJuJiTuiJian") {
+                this.GQJJTJ_List = res.body.featureList[i].dataList;
+              }
+              else if (res.body.featureList[i].type == "ZongHeGaoQingTuiJian") {
+                this.ZHGQTJ_List = res.body.featureList[i].dataList;
+              }
+            }
+            this.$refs.loadmore.onTopLoaded();
+          },
+          res => {
+            console.log("错误！" + res);
+          })
+
+      },
+      Swiper(){
+        if (this.banner_List.length != 0 && this.ZJTJ_List.length != 0) {
+          new Swiper('.TJDT .swiper-container', {
+            pagination: '.TJDT .swiper-pagination',
+            autoHeight: true,
+            autoplay: 4000,
+            paginationClickable: true,
+            autoplayDisableOnInteraction: false
+          });
+        }
+      },
+      Swiper2(){
+        var _vue = this;
+        new Swiper('#bigbox>.swiper-container', {
+          slidesPerView: 'auto',
+          autoHeight: true,
+          freeMode: true,
+          direction: 'vertical',
+          observer: true,
+          freeModeMomentumRatio: 2,
+          freeModeMomentumVelocityRatio: 2,
+          onTouchMove: function(swiper){
+            if (swiper.translate > 60) {
+              _vue.isTipsShow = "tipsShow";
+            }
+          },
+          onTouchEnd: function(swiper){
+            if(swiper.translate > 60){ //判断下拉刷新
+              _vue.getMsg();
+              setTimeout(function () {
+                _vue.isTipsShow = "tipsHide";
+              }, 2000)
+            }
+          }
+        });
+      },
+      change(){
+//        for (var i = 0; i < this.banner_List.length; i++) {
+//          if (this.banner_List[i].contentType !== "movie") {
+//            console.log(this.banner_List[i]);
+//          }
+//        }
+        for (var i = 0; i < this.banner_List.length; i++) {
+          if (this.banner_List[i].contentType == "vpg_video") {
+            this.banner_List[i].contentType = "movie";
+          } else if (this.banner_List[i].contentType == "vpg_package") {
+            this.banner_List[i].contentType = "package";
+          }
+        }
+        for (var i = 0; i < this.GQDYTJ_List.length; i++) {
+          this.GQDYTJ_List[i].contentType = "movie";
+        }
+        for (var i = 0; i < this.GQJJTJ_List.length; i++) {
+          this.GQJJTJ_List[i].contentType = "package";
+        }
+        for (var i = 0; i < this.ZHGQTJ_List.length; i++) {
+          this.ZHGQTJ_List[i].contentType = "package";
+          this.ZHGQTJ_List[i].aaa = "zhgq"
+        }
+      },
+      goContent(id, type){
+        this.$router.push({path: 'detail', query: {id: id, type: type}});
+      },
+      getUrl(){
+//        alert(window.location.href);
+        if (this.$store.state.openid == 0) {
+
+          this.$store.commit("openid", this.$route.query.openid);
+          this.$store.commit("nickName", this.$route.query.nickname);
+          this.$store.commit("headImg", this.$route.query.headimgurl);
+        }
+//        console.log("recommend.vue",this.$store.state.openid);
+       /* console.log(this.$store.state.nickName);
+        console.log(this.$store.state.headImg);
+        alert(this.$route.query.openid);
+        alert(this.$route.query.nickname);
+        alert(this.$route.query.headimgurl);
+        alert(this.$store.state.openid);
+        alert(this.$store.state.nickName);
+        alert(this.$store.state.headImg);*/
+      },
+      handleTopChange(status){
+        this.topStatus = status
+      },
+      login() {
+        if (this.$store.state.openid == 0 || this.$store.state.openid == undefined || this.$store.state.openid == -1) {
+          return
+        }
+        var msmp_appkey = "76579579da14418ba97b1cbe38366410";
+        //login的URL 参数 sign的设置
+        var login_params = "loginname=" + this.$store.state.openid + "&loginpwd=123456&devicetype=6&logintype=wechat&resultformat=JSON";
+        var login_sign = getSign(login_params + msmp_appkey);
+        var login_url = "/msmp/nscreen/login.action?loginname=" + this.$store.state.openid + "&loginpwd=123456&devicetype=6&logintype=wechat&resultformat=JSON&sign=" + login_sign;
+        //发送登录请求
+        this.$http.get(login_url, {headers: {Authorization: "Basic " + btoa("screen:screen123")}}).then(res => {
+          var login_data = res.body;
+          //将userid存入vuex
+          this.$store.commit("userID", login_data.userid);
+
+          var chaxun_url = "/cms/externalmsmp/getnscreenbindclient.service?userid=" + this.$store.state.userID;
+
+          this.$http.get(chaxun_url).then(res => {
+            var chaxun_data = res.body;
+
+            if (chaxun_data.clientlist.length == 1) {
+              this.$store.commit("STBid", chaxun_data.clientlist[0].clientid);
+              this.$store.commit("STBname", chaxun_data.clientlist[0].clientname);
+              this.$store.commit("STBactiveIndex", 0);
+            } else {
+              return
+            }
+
+          }, res => {
+            alert("查询接口出错!");
+          })
+        }, res => {
+          alert("登录2接口错误！");
+        })
+      }
+    },
+    filters: {
+      imgChange(v1){
+        var s = Math.random();
+        return "/cms/res/mobilePoster/" + v1 + "?s=" + s;
+      }
+    }
+  }
+</script>
+
+<style scoped>
+
+  #bigbox {
+    /*position: absolute;*/
+    width: 100%;
+    overflow: hidden;
+  }
+  .mint-loadmore {
+    width: 100%;
+    margin-top: 8vh;
+    padding-bottom: 8vh;
+  }
+  .mint-loadmore-top span {
+    display: inline-block;
+    vertical-align: middle;
+    transition: all .25s;
+  }
+  .rotate {
+    transform: rotate(180deg);
+  }
+  #tips {
+    width: 100%;
+    height: 6vh;
+    line-height: 6vh;
+    text-align: center;
+  }
+  .tipsShow {
+    display: block;
+  }
+  .tipsHide {
+    display: none;
+  }
+
+  img {
+    display: block;
+    width: 100%;
+  }
+
+</style>

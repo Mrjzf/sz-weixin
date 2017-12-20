@@ -1,0 +1,138 @@
+<template>
+	<div class="templ">
+		<header>
+
+     <!--这里的按钮是返回上一级 -->
+		<router-link class='icon-chs_sywx_ic_jt_left' to="/my"></router-link>
+    <nav>
+      <ul>
+        <li><router-link id="zhibo" to="/record/recordzb" :class="{active:this.torecordhead==1}">
+          直播</router-link>
+          <div class="spot" id="spot1" v-show="this.torecordhead==1"></div>
+        </li>
+        <li><router-link id="huikan" to="/record/recordhk" :class="{active:this.torecordhead==2}">
+          回看</router-link>
+          <div class="spot" id="spot2" v-show="this.torecordhead==2"></div>
+        </li>
+        <li><router-link id="dianbo" to="/record/recorddb" :class="{active:this.torecordhead==3}">
+          点播精选</router-link>
+          <div class="spot" id="spot3" v-show="this.torecordhead==3"></div>
+        </li>
+        <div class="clear"></div>
+
+      </ul>
+    </nav>
+    <router-link to="/delete"><span class='icon-chs_sywx_ic_delete'></span></router-link>
+		</header>
+
+    <router-view></router-view>
+
+
+	</div>
+</template>
+
+<script>
+
+export default {
+	data: function() {
+		return {
+
+		}
+	},
+  created:function () {
+
+  },
+  props:['torecordhead'],
+  methods:{
+    goback:function () {
+      this.$router.go(-1);
+    }
+  }
+}
+</script>
+
+<style scoped>
+
+header{
+  position: relative;
+  height:52px;
+  border-bottom: 3px solid #ff4008;
+  background-color: #fff;
+}
+a{
+  font-family:"Microsoft YaHei";
+	font-size:16px;
+  color:#999;
+}
+.clear{
+  clear:both;
+}
+.active{
+  color:#FF4008;
+}
+
+
+/*导航栏*/
+nav{
+  margin:0 auto;
+  padding:14px 0 14px 0;
+  width:176px;
+}
+li{
+  position: relative;
+  list-style: none;
+}
+li:nth-child(1){
+  float: left;
+  width:28%;
+  text-align: left;
+}
+li:nth-child(2){
+  float: left;
+  width:28%;
+  text-align:center;
+}
+li:nth-child(3){
+  float: right;
+  width:44%;
+  text-align:right;
+}
+
+
+/*两个按钮的位置用absolute定死,否则nav会掉下去*/
+.icon-chs_sywx_ic_jt_left{
+	color:#FF3E05;
+	font-size:21px;
+  position: absolute;
+  left:16px;
+  top:15px;
+}
+.icon-chs_sywx_ic_delete{
+  color:#FF4008;
+  font-size:21px;
+  position: absolute;
+  right:16px;
+  top:15px;
+}
+
+/*小圆点*/
+.spot{
+  background-color: #FF4008;
+  width:6px;
+  height:6px;
+  border-radius: 50%;
+  position: absolute;
+  top:25px;
+}
+#spot1{
+  left:14px;
+}
+#spot2{
+  left:21px;
+}
+#spot3{
+  left:40px;
+}
+
+
+</style>

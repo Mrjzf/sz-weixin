@@ -1,0 +1,304 @@
+<template>
+  <div class="templ">
+
+    <LiveHead :tolivehead="tolivehead"></LiveHead>
+    <!--<div class="clearfixed"></div>-->
+    <!--<router-view></router-view>-->
+
+    <section>
+
+      <div id="leftSide">
+
+        <!-- 这里将index作为参数传到changeActive里去 -->
+        <div class="swiper-container">
+          <div class="swiper-wrapper">
+            <div v-for="(item,index) in classify" class="every_swiper swiper-slide" :class="{active:isActive==index}"
+                 @click="changeActive(index, item.id)">{{item.name}}
+              <div class="dash" v-show="isActive==index"></div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+
+      <div id="rightSide">
+
+        <div class="swiper-container">
+          <div class="swiper-wrapper">
+            <div v-for="item in show" class="swiper-slide every_swiper" @click="goShow(item.id)">
+              <img :src="'/cms/res/mobile/' + item.logo"/>
+              <figure>
+                <!--<img src="../../assets/zjtb.png"/>-->
+                <h1>{{item.name}}</h1>
+                <h2>{{item.currentProgram.startTime | timeInit}} {{item.currentProgram.name}}</h2>
+                <h3>即将播出:</h3>
+                <h3>{{item.nextProgram.startTime | timeInit}} {{item.nextProgram.name}}</h3>
+              </figure>
+
+              <!--消除浮动的-->
+              <div class="clear"></div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+      <div class="clear"></div>
+
+    </section>
+
+    <div id="footerHeight"></div>
+
+  </div>
+</template>
+
+<script>
+  import LiveHead from './LiveHead.vue'
+
+  export default {
+    data: function () {
+      return {
+        classify: [],
+        tolivehead: 1,
+        isActive: 0,
+        category: "",
+        show: [],
+        startX: 0,
+        endX: 0,
+        changeX: 0,
+        startY: 0,
+        startY: 0,
+        changeY: 0
+      }
+    },
+    components: {
+      LiveHead
+    },
+    created(){
+      this.getType();
+    },
+    updated(){
+      this.Swiper();
+    },
+    mounted(){
+
+    },
+    methods: {
+      changeActive: function (index, category) {
+        if (this.category == category) {
+          return
+        }
+        this.category = category;
+        this.isActive = index;
+        var url = "/cms/thirdPartyPortalInterface/getNScreenChannelList.service?resFormat=json&category=" + category + "&customgroup=normal&terminalType=mobile-live&nsRegionId=2";
+
+        this.$http.get(url).then(res => {
+            var data = res.body.getNScreenChannelListResponse.channelList.channel;
+            this.show = data;
+          },
+          res => {
+            console.log("错误！" + res);
+          })
+      },
+
+      //在点击屏幕开始收集坐标数据
+      judge: function (e) {
+        this.startX = e.changedTouches[0].clientX;
+        this.startY = e.changedTouches[0].clientY;
+      },
+      //判断滑动方向,模仿点击事件
+      toNext: function (e) {
+        this.endX = e.changedTouches[0].clientX;
+        this.endY = e.changedTouches[0].clientY;
+        this.changeX = this.startX - this.endX;
+        this.changeY = this.startY - this.endY;
+        if ((Math.abs(this.changeX) > 25) && this.changeX > 0 &&
+          (Math.abs(this.changeX) > Math.abs(this.changeY))) {
+          document.getElementById('show').click();
+        } else if ((Math.abs(this.changeX) > 25) && this.changeX < 0) {
+          //do nothing
+        }
+      },
+      getType(){
+//        获取频道分类
+          var url = "/cms/thirdPartyPortalInterface/getNScreenChannelCategory.service?resFormat=json";
+          this.$http.get(url).then(res => {
+              var data = res.body.getNScreenChannelCategoryResponse.categoryList.category;
+              this.classify = data;
+            },
+            res => {
+              console.log("错误！" + res);
+            })
+
+
+//        获取第一次数据
+        var url2 = "/cms/thirdPartyPortalInterface/getNScreenChannelList.service?resFormat=json&category=1000&customgroup=normal&terminalType=mobile-live&nsRegionId=2";
+        this.$http.get(url2).then(res => {
+            var data = res.body.getNScreenChannelListResponse.channelList.channel;
+            this.show = data;
+          },
+          res => {
+            console.log("错误！" + res);
+          })
+
+        //获取第一个频道评论
+        var url3 = "/cms/thirdPartyPortalInterface/listComment.service?contentType=cpg_channel&resFormat=json&targetType=mobile&contentId=204455";
+        this.$http.get(url3).then(res => {
+            var data = res.body;
+            this.$store.commentList = data.listCommentResponse;
+          },
+          res => {
+            console.log("错误！" + res);
+          })
+      },
+      Swiper(){
+        if (this.show != "" && this.classify != "") {
+          new Swiper('#leftSide .swiper-container', {
+            slidesPerView: 7,
+            direction : 'vertical',
+            freeMode: true
+          });
+          new Swiper('#rightSide .swiper-container', {
+            slidesPerView: 3.5,
+            spaceBetween: 1,
+            freeMode: true,
+            direction: 'vertical',
+          });
+        }
+      },
+      goShow(channelId){
+        this.$router.push({ path: '/live/show', query: { channelId: channelId }})
+      }
+    },
+    filters: {
+      timeInit(v1){
+        return v1.substring(8, 13);
+      }
+    }
+  };
+
+</script>
+
+<style scoped>
+
+  .clearfixed {
+    height: 255px;
+  }
+
+  section {
+    background-color: #fff;
+    margin-top: 43vh;
+  }
+
+  /*左边的导航*/
+  #leftSide {
+    border-right: 2px solid #eee;
+    width: 25%;
+    float: left;
+  }
+
+  .clear {
+    clear: both;
+  }
+
+  #leftSide .swiper-container {
+    height: 49vh;
+  }
+
+  #leftSide .swiper-container .every_swiper {
+    list-style: none;
+    position: relative;
+    /*height: 49px;*/
+    text-align: center;
+    line-height: 50px;
+    font-size: 14px;
+    font-family: "Microsoft YaHei";
+  }
+
+  .dash {
+    width: 4px;
+    background-color: #FF3E05;
+    height: 25px;
+    position: absolute;
+    top: 11px;
+    right: -2px;
+  }
+
+  .active {
+    font-size: 15px;
+    color: #FF3E05;
+  }
+
+  /*右边的#rightSide*/
+  #rightSide {
+    width: 74%;
+    float: right;
+    height: 49vh;
+  }
+
+  #rightSide .swiper-container {
+    width: 100%;
+    height: 100%;
+    padding: 2vh 0 2vh 0;
+  }
+  #rightSide .every_swiper {
+    min-height: 75px;
+    height: 90px;
+  }
+  #rightSide .every_swiper:last-child {
+    /*padding: 0 0 8px 0;*/
+    /*height: 80px;*/
+    /*overflow: auto;*/
+  }
+
+  #rightSide .swiper-slide img {
+    width: 30%;
+    float: left;
+  }
+
+  figure {
+    width: 65%;
+    margin: 0 0 0 2.5%;
+    padding: 0;
+    float: left;
+  }
+
+  h1 {
+    font-weight: normal;
+    margin: 0;
+    /*padding-left: 20px;*/
+    font-size: 15px;
+    font-family: "Microsoft Yahei";
+  }
+
+  h2 {
+    font-weight: normal;
+    font-size: 14px;
+    font-family: "Microsoft Yahei";
+    color: red;
+    overflow: hidden;
+    text-overflow:ellipsis;
+    white-space: nowrap;
+  }
+
+  /*为什么这里是从3开始*/
+  h2:nth-child(3) {
+    margin-top: 15px;
+    color: #555;
+  }
+
+  h2:nth-child(4) {
+    margin-top: 10px;
+    color: #999;
+  }
+
+  h3 {
+    font-size: 14px;
+    color: #919191;
+    overflow: hidden;
+    text-overflow:ellipsis;
+    white-space: nowrap;
+  }
+
+</style>
+

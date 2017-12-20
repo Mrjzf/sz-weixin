@@ -1,0 +1,168 @@
+<template>
+	<div class="templ">
+
+    <!--向head发送数据-->
+		<RecordHead :torecordhead="torecordhead"></RecordHead>
+
+
+    <section @touchend ="toNext" @touchstart="judge">
+      <RecordTime></RecordTime>
+
+      <ul>
+      <li class="zb">
+        <img src="../../assets/dianshitai2.png" alt='北京电视台' />
+        <hgroup>
+          <h1>{{tv}}{{clarity | formatClarity}}</h1>
+          <h2>{{play}}<span>{{number | formatNum}}</span></h2>
+        </hgroup>
+      </li>
+      <li class="zb">
+        <img src="../../assets/dianshitai2.png" alt='北京电视台' />
+        <hgroup>
+          <h1>{{tv}}{{clarity | formatClarity}}</h1>
+          <h2>{{play}}<span>{{number | formatNum}}</span></h2>
+        </hgroup>
+      </li>
+      <li class="zb">
+        <img src="../../assets/dianshitai2.png" alt='北京电视台' />
+        <hgroup>
+          <h1>{{tv}}{{clarity | formatClarity}}</h1>
+          <h2>{{play}}<span>{{number | formatNum}}</span></h2>
+        </hgroup>
+      </li>
+      <li class="zb">
+        <img src="../../assets/dianshitai2.png" alt='北京电视台' />
+        <hgroup>
+          <h1>{{tv}}{{clarity | formatClarity}}</h1>
+          <h2>{{play}}<span>{{number | formatNum}}</span></h2>
+        </hgroup>
+      </li>
+    </ul>
+
+      <RecordTime></RecordTime>
+      <ul>
+        <li class="zb">
+          <img src="../../assets/dianshitai2.png" alt='北京电视台' />
+          <hgroup>
+            <h1>{{tv}}{{clarity | formatClarity}}</h1>
+            <h2>{{play}}<span>{{number | formatNum}}</span></h2>
+          </hgroup>
+        </li>
+        <li class="zb">
+          <img src="../../assets/dianshitai2.png" alt='北京电视台' />
+          <hgroup>
+            <h1>{{tv}}{{clarity | formatClarity}}</h1>
+            <h2>{{play}}<span>{{number | formatNum}}</span></h2>
+          </hgroup>
+        </li>
+        <li class="zb">
+          <img src="../../assets/dianshitai2.png" alt='北京电视台' />
+          <hgroup>
+            <h1>{{tv}}{{clarity | formatClarity}}</h1>
+            <h2>{{play}}<span>{{number | formatNum}}</span></h2>
+          </hgroup>
+        </li>
+        <li class="zb">
+          <img src="../../assets/dianshitai2.png" alt='北京电视台' />
+          <hgroup>
+            <h1>{{tv}}{{clarity | formatClarity}}</h1>
+            <h2>{{play}}<span>{{number | formatNum}}</span></h2>
+          </hgroup>
+        </li>
+      </ul>
+    </section>
+
+	</div>
+</template>
+
+<script>
+import RecordHead from './RecordHead.vue';
+import RecordTime from './RecordTime.vue';
+
+
+export default {
+	data: function() {
+		return {
+      tv:'北京卫视',
+      clarity:'高清',
+      play:'甄嬛传',
+      number:'32',
+      torecordhead:1,
+      startX:0,
+      endX:0,
+      changeX:0
+		}
+	},
+  filters:{
+    formatClarity:function (cla) {
+      return '('+cla+')';
+    },
+    formatNum:function (num) {
+      return num+'集';
+    }
+  },
+	components:{
+		RecordHead,
+		RecordTime
+	},
+	methods:{
+
+    //在点击屏幕开始收集坐标数据
+    judge:function (e) {
+      this.startX=e.changedTouches[0].clientX;
+    },
+	  //判断滑动方向,模仿点击事件
+    //大于10像素就判断为滑动
+    toNext:function (e) {
+      this.endX=e.changedTouches[0].clientX;
+      this.changeX=this.startX-this.endX;
+      if((Math.abs(this.changeX)>10)&&this.changeX>0){
+        document.getElementById('huikan').click();
+      }else if((Math.abs(this.changeX)>10)&&this.changeX<0){
+        //do nothing
+      }
+    }
+	}
+};
+
+</script>
+
+<style scoped>
+
+
+.zb{
+  position:relative;
+  height:80px;
+  border-bottom: 1px solid #eee;
+  background-color: #fff;
+}
+img{
+  position:absolute;
+  top:16px;
+  left:16px;
+  border:1px solid #eee;
+}
+hgroup{
+  position: absolute;
+  left:80px;
+  top: 21px;
+}
+hgroup h1{
+  margin:0;
+  font-weight: normal;
+  font-size:16px;
+  font-family:"Microsoft YaHei";
+  color:#3C3C3C;
+
+}
+hgroup h2{
+  margin:9px 0 0 0;
+  font-weight: normal;
+  font-family: "Microsoft YaHei";
+  font-size:14px;
+  color:#999;
+}
+
+
+</style>
+

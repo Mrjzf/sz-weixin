@@ -1,0 +1,587 @@
+<template>
+  <div id="rc">
+
+    <header>
+      <span id="STBname">XXX的机顶盒</span>
+    </header>
+
+    <div id="allBtn">
+
+      <div :class="'ending1' | fclsEnding('isActiveA1', judge)" @touchstart="startActive('ending')" @touchend="endActive()">
+        <div :class="'ending2 icon-chs_sywx_ic_detail_stop' | fclsEnding('isActiveA2', judge)"></div>
+      </div>
+
+      <div class="volume1">
+        <div class="volume2">
+          <div :class="'volSub icon-chs_sywx_ic_detail_jian' | fclsVolSub('isActiveC', judge)" @touchstart="startActive('volsub')" @touchend="endActive()"></div>
+          音量
+          <div :class="'volAdd icon-chs_sywx_ic_detail_jia' | fclsVolAdd('isActiveC', judge)" @touchstart="startActive('voladd')" @touchend="endActive()"></div>
+        </div>
+      </div>
+
+      <div :class="'menu1' | fclsMenu('isActiveA1', judge)" @touchstart="startActive('menu')" @touchend="endActive()">
+        <div :class="'menu2' | fclsMenu('isActiveA2', judge)">菜单</div>
+      </div>
+
+      <div class="disk1">
+        <div class="disk2">
+
+          <!--上下箭头-->
+          <div :class="'up icon-chs_sywx_ic_detail_jiant' | fclsUp('isActiveC', judge)" @touchstart="startActive('up')" @touchend="endActive()"></div>
+          <div :class="'down icon-chs_sywx_ic_detail_jiant' | fclsDown('isActiveC', judge)" @touchstart="startActive('down')" @touchend="endActive()"></div>
+
+          <!--确认按钮-->
+          <div class="s_disk1" @touchstart="startActive('s_disk')" @touchend="endActive()">
+            <div :class="'s_disk2' | fclsS_disk('isActiveA2', judge)">
+              确认
+            </div>
+          </div>
+
+          <!--左右箭头-->
+          <div :class="'left icon-chs_sywx_ic_detail_jiant' | fclsLeft('isActiveC', judge)" @touchstart="startActive('left')" @touchend="endActive()"></div>
+          <div :class="'right icon-chs_sywx_ic_detail_jiant' | fclsRight('isActiveC', judge)" @touchstart="startActive('right')" @touchend="endActive()"></div>
+
+        </div>
+      </div>
+
+      <div :class="'exit1' | fclsExit('isActiveA1', judge)" @touchstart="startActive('exit')" @touchend="endActive()">
+        <div :class="'exit2' | fclsExit('isActiveA2', judge)">
+          退出
+        </div>
+      </div>
+
+      <!--<div class="channel1">-->
+        <!--<div class="channel2">-->
+          <!--输入文字-->
+        <!--</div>-->
+      <!--</div>-->
+
+      <div :class="'back1' | fclsBack('isActiveA1', judge)" @touchstart="startActive('back')" @touchend="endActive()">
+        <div :class="'back2' | fclsBack('isActiveA2', judge)">
+          返回
+        </div>
+      </div>
+
+      <!--不用管的线-->
+      <span class="cut_line"></span>
+      <span class="area_line1"></span>
+      <span class="area_line2"></span>
+
+      <div :class="'icon-chs_sywx_ic_detail_livez' | fclsLivez('isActiveB', judge)" @touchstart="startActive('livez')" @touchend="endActive()">
+        <div class="icon1">直播助手</div>
+      </div>
+
+      <div :class="'icon-chs_sywx_ic_detail_vodz' | fclsVodz('isActiveB', judge)" @touchstart="startActive('vodz')" @touchend="endActive()">
+        <div class="icon2">点播助手</div>
+      </div>
+
+      <div :class="'icon-chs_sywx_ic_detail_num' | fclsNum('isActiveB', judge)" @touchstart="startActive('num')" @touchend="endActive()">
+        <div class="icon3">数字键</div>
+      </div>
+
+      <div :class="'icon-chs_sywx_ic_detail_setting' | fclsSetting('isActiveB', judge)" @touchstart="startActive('setting')" @touchend="endActive()">
+        <div class="icon4">设置</div>
+      </div>
+
+    </div>
+
+  </div>
+</template>
+
+<script>
+  export default {
+    data(){
+      return {
+        judge: "",
+        classChange1: "",
+        classChange2: ""
+      }
+    },
+    methods: {
+      startActive(btn){
+        this.judge = btn;
+      },
+      endActive(){
+        this.judge = "";
+      }
+    },
+    filters: {
+      fclsEnding(v1, v2, v3){
+        var v = {};
+        v[v1] = true;
+        v[v2] = (v3 == "ending");
+        return v;
+      },
+      fclsMenu(v1, v2, v3){
+        var v = {};
+        v[v1] = true;
+        v[v2] = (v3 == "menu");
+        return v;
+      },
+      fclsExit(v1, v2, v3){
+        var v = {};
+        v[v1] = true;
+        v[v2] = (v3 == "exit");
+        return v;
+      },
+      fclsBack(v1, v2, v3){
+        var v = {};
+        v[v1] = true;
+        v[v2] = (v3 == "back");
+        return v;
+      },
+      fclsS_disk(v1, v2, v3){
+        var v = {};
+        v[v1] = true;
+        v[v2] = (v3 == "s_disk");
+        return v;
+      },
+      fclsLivez(v1, v2, v3){
+        var v = {};
+        v[v1] = true;
+        v[v2] = (v3 == "livez");
+        return v;
+      },
+      fclsVodz(v1, v2, v3){
+        var v = {};
+        v[v1] = true;
+        v[v2] = (v3 == "vodz");
+        return v;
+      },
+      fclsNum(v1, v2, v3){
+        var v = {};
+        v[v1] = true;
+        v[v2] = (v3 == "num");
+        return v;
+      },
+      fclsSetting(v1, v2, v3){
+        var v = {};
+        v[v1] = true;
+        v[v2] = (v3 == "setting");
+        return v;
+      },
+      fclsUp(v1, v2, v3){
+        var v = {};
+        v[v1] = true;
+        v[v2] = (v3 == "up");
+        return v;
+      },
+      fclsDown(v1, v2, v3){
+        var v = {};
+        v[v1] = true;
+        v[v2] = (v3 == "down");
+        return v;
+      },
+      fclsLeft(v1, v2, v3){
+        var v = {};
+        v[v1] = true;
+        v[v2] = (v3 == "left");
+        return v;
+      },
+      fclsRight(v1, v2, v3){
+        var v = {};
+        v[v1] = true;
+        v[v2] = (v3 == "right");
+        return v;
+      },
+      fclsVolAdd(v1, v2, v3){
+        var v = {};
+        v[v1] = true;
+        v[v2] = (v3 == "voladd");
+        return v;
+      },
+      fclsVolSub(v1, v2, v3){
+        var v = {};
+        v[v1] = true;
+        v[v2] = (v3 == "volsub");
+        return v;
+      },
+    }
+  }
+</script>
+
+<style scoped>
+  #rc {
+    width: 100%;
+    height: 100vh;
+    overflow: hidden;
+    background-color: #EAEAEA;
+    position: relative;
+  }
+
+  header {
+    width: 100%;
+    height: 12vw;
+    background-color: #fff;
+    line-height: 12vw;
+    font-size: 5vw;
+  }
+  #STBname {
+    display: block;
+    text-align: center;
+  }
+
+  /*结束按钮*/
+  #allBtn {
+    width: 100%;
+    height: 85%;
+    text-align: center;
+    position: absolute;
+  }
+  #allBtn .ending1 {
+    width: 14vw;
+    height: 14vw;
+    background-image: linear-gradient(to bottom, #a3a3a3, #a3a3a3, #a3a3a3, #e5e5e5, #a3a3a3, #a3a3a3, #a3a3a3);
+    /*margin: 5vw 0 0 8%;*/
+    border-radius: 15vw;
+    position: absolute;
+    top: 1vh;
+    left: 8vw;
+    box-shadow: 0 0 10px -5px #4a4a4a;
+  }
+  #allBtn .ending2 {
+    width: 12vw;
+    height: 12vw;
+    background-image: linear-gradient(to bottom, #f3f3f3, #b9babd);
+    border-radius: 15vw;
+    position: absolute;
+    bottom: 50%;
+    left: 50%;
+    transform: translateX(-6vw) translateY(6vw);
+    line-height: 13vw;
+    font-size: 6vw;
+  }
+
+  /*音量控制*/
+  #allBtn .volume1 {
+    width: 40vw;
+    height: 10vw;
+    text-align: center;
+    line-height: 10vw;
+    position: absolute;
+    top: 2vh;
+    left: 50%;
+    transform: translateX(-20vw);
+    border-radius: 5vw;
+    background-image: linear-gradient(to bottom, #a3a3a3, #a3a3a3, #a3a3a3, #e5e5e5, #a3a3a3, #a3a3a3, #a3a3a3);
+  }
+  #allBtn .volume2 {
+    width: 39vw;
+    height: 9vw;
+    text-align: center;
+    line-height: 9vw;
+    font-size: 4vw;
+    color: #8b8b8b;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translateX(-19.5vw) translateY(-4.5vw);
+    border-radius: 5vw;
+    background-image: linear-gradient(to bottom, #f3f3f3, #b9babd);
+  }
+  #allBtn .volSub {
+    position: absolute;
+    top: 2.5vw;
+    left: 5vw;
+    font-size: 6vw;
+    color: #ff7f00;
+  }
+  #allBtn .volAdd {
+    position: absolute;
+    top: 2.5vw;
+    right: 5vw;
+    font-size: 6vw;
+    color: #ff7f00;
+  }
+
+  /*菜单按钮*/
+  #allBtn .menu1 {
+    width: 14vw;
+    height: 14vw;
+    background-image: linear-gradient(to bottom, #a3a3a3, #a3a3a3, #a3a3a3, #e5e5e5, #a3a3a3, #a3a3a3, #a3a3a3);
+    /*margin: 5vw 0 0 8%;*/
+    border-radius: 15vw;
+    position: absolute;
+    top: 1vh;
+    right: 8vw;
+    box-shadow: 0 0 10px -5px #4a4a4a;
+  }
+  #allBtn .menu2 {
+    width: 12vw;
+    height: 12vw;
+    background-image: linear-gradient(to bottom, #f3f3f3, #b9babd);
+    border-radius: 15vw;
+    position: absolute;
+    bottom: 50%;
+    left: 50%;
+    transform: translateX(-6vw) translateY(6vw);
+    line-height: 12vw;
+    font-size: 4vw;
+  }
+
+  /*大圆盘*/
+  /*圆盘*/
+  #allBtn .disk1 {
+    width: 60vw;
+    height: 60vw;
+    position: absolute;
+    top: 11vh;
+    left: 50%;
+    transform: translateX(-30vw);
+    border-radius: 30vw;
+    background-image: linear-gradient(to bottom, white 45%, #565656);
+  }
+  #allBtn .disk2 {
+    width: 59vw;
+    height: 59vw;
+    /*background-color: #dfdfdf;*/
+    position: absolute;
+    top: 0.5vw;
+    left: 0.5vw;
+    border-radius: 30vw;
+    background-image: linear-gradient(to bottom, #d8d8d8 45%, #ffffff);
+  }
+  #allBtn .s_disk1 {
+    width: 25vw;
+    height: 25vw;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translateX(-12.5vw) translateY(-12.5vw);
+    border-radius: 12.5vw;
+    background-image: linear-gradient(to bottom, #a4a4a5, #FFFFFF 60%);
+  }
+  #allBtn .s_disk2 {
+    width: 24vw;
+    height: 24vw;
+    position: absolute;
+    top: 0.5vw;
+    left: 0.5vw;
+    border-radius: 12vw;
+    background-image: linear-gradient(to bottom, #F5F6F6, #cbcdcf);
+    text-align: center;
+    line-height: 24vw;
+    font-size: 6vw;
+    color: #ff7f00;
+  }
+
+  /*圆盘里的箭头*/
+  #allBtn .up {
+    width: 10vw;
+    height: 10vw;
+    font-size: 8vw;
+    color: #ff7f00;
+    position: absolute;
+    top: 2vw;
+    left: 50%;
+    transform: translateX(-5vw);
+  }
+  #allBtn .down {
+    width: 10vw;
+    height: 10vw;
+    font-size: 8vw;
+    color: #ff7f00;
+    position: absolute;
+    bottom: 2vw;
+    left: 50%;
+    transform: translateX(-5vw) rotate(180deg);
+  }
+  #allBtn .left {
+    width: 10vw;
+    height: 10vw;
+    font-size: 8vw;
+    color: #ff7f00;
+    position: absolute;
+    top: 50%;
+    left: 2vw;
+    transform: translateY(-5vw) rotate(-90deg);
+  }
+  #allBtn .right {
+    width: 10vw;
+    height: 10vw;
+    font-size: 8vw;
+    color: #ff7f00;
+    position: absolute;
+    top: 50%;
+    right: 2vw;
+    transform: translateY(-5vw) rotate(90deg);
+  }
+
+  /*退出按钮*/
+  #allBtn .exit1 {
+    width: 14vw;
+    height: 14vw;
+    background-image: linear-gradient(to bottom, #a3a3a3, #a3a3a3, #a3a3a3, #e5e5e5, #a3a3a3, #a3a3a3, #a3a3a3);
+    border-radius: 15vw;
+    position: absolute;
+    top: 50vh;
+    left: 13vw;
+    box-shadow: 0 0 10px -5px #4a4a4a;
+  }
+  #allBtn .exit2 {
+    width: 12vw;
+    height: 12vw;
+    background-image: linear-gradient(to bottom, #f3f3f3, #b9babd);
+    border-radius: 15vw;
+    position: absolute;
+    bottom: 50%;
+    left: 50%;
+    transform: translateX(-6vw) translateY(6vw);
+    line-height: 12vw;
+    font-size: 4vw;
+    /*color: #ff7f00;*/
+  }
+
+  /*输入文字按钮*/
+  #allBtn .channel1 {
+     width: 35vw;
+     height: 10vw;
+     text-align: center;
+     line-height: 10vw;
+     position: absolute;
+     bottom: 31.5vw;
+     left: 50%;
+     transform: translateX(-17.5vw);
+     border-radius: 5vw;
+     background-image: linear-gradient(to bottom, #a3a3a3, #a3a3a3, #a3a3a3, #e5e5e5, #a3a3a3, #a3a3a3, #a3a3a3);
+   }
+  #allBtn .channel2 {
+    width: 34vw;
+    height: 9vw;
+    text-align: center;
+    line-height: 9vw;
+    font-size: 4vw;
+    color: #8b8b8b;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translateX(-17vw) translateY(-4.5vw);
+    border-radius: 5vw;
+    background-image: linear-gradient(to bottom, #f3f3f3, #b9babd);
+  }
+
+    /*返回按钮*/
+  #allBtn .back1 {
+    width: 14vw;
+    height: 14vw;
+    background-image: linear-gradient(to bottom, #a3a3a3, #a3a3a3, #a3a3a3, #e5e5e5, #a3a3a3, #a3a3a3, #a3a3a3);
+    border-radius: 15vw;
+    position: absolute;
+    top: 50vh;
+    right: 13vw;
+    box-shadow: 0 0 10px -5px #4a4a4a;
+  }
+  #allBtn .back2 {
+    width: 12vw;
+    height: 12vw;
+    background-image: linear-gradient(to bottom, #f3f3f3, #b9babd);
+    border-radius: 15vw;
+    position: absolute;
+    bottom: 50%;
+    left: 50%;
+    transform: translateX(-6vw) translateY(6vw);
+    line-height: 12vw;
+    font-size: 4vw;
+    /*color: #ff7f00;*/
+  }
+
+  /*分割线*/
+  #allBtn .cut_line {
+    display: block;
+    position: absolute;
+    width: 100%;
+    height: 1px;
+    background-color: #d8d8d8;
+    top: 62vh;
+  }
+
+  /*区域分割线*/
+  #allBtn .area_line1 {
+    display: block;
+    width: 1px;
+    height: 25vh;
+    background-color: #d8d8d8;
+    position: absolute;
+    top: 62vh;
+    left: 50%;
+  }
+  #allBtn .area_line2 {
+    display: block;
+    width: 100%;
+    height: 1px;
+    background-color: #d8d8d8;
+    position: absolute;
+    top: 72.5vh;
+  }
+
+  /*小图标*/
+  /*icon1*/
+  #allBtn .icon-chs_sywx_ic_detail_livez {
+    font-size: 8vw;
+    position: absolute;
+    top: 64vh;
+    color: #6e6e6e;
+    left: 15vw;
+  }
+  #allBtn .icon1 {
+    width: 20vw;
+    height: 12vw;
+    font-size: 3vw;
+  }
+  /*icon2*/
+  #allBtn .icon-chs_sywx_ic_detail_vodz {
+    font-size: 8vw;
+    position: absolute;
+    top: 64vh;
+    color: #6e6e6e;
+    right: 15vw;
+  }
+  #allBtn .icon2 {
+    width: 20vw;
+    height: 12vw;
+    font-size: 3vw;
+  }
+  /*icon3*/
+  #allBtn .icon-chs_sywx_ic_detail_num {
+    font-size: 8vw;
+    position: absolute;
+    top: 74.5vh;
+    color: #6e6e6e;
+    left: 15vw;
+  }
+  #allBtn .icon3 {
+    width: 20vw;
+    height: 12vw;
+    font-size: 3vw;
+  }
+  /*icon4*/
+  #allBtn .icon-chs_sywx_ic_detail_setting {
+    font-size: 8vw;
+    position: absolute;
+    top: 74.5vh;
+    color: #6e6e6e;
+    right: 15vw;
+  }
+  #allBtn .icon4 {
+    width: 20vw;
+    height: 12vw;
+    font-size: 3vw;
+  }
+
+  /*被点样式汇总*/
+  .isActiveA1 {
+    background-image: linear-gradient(to bottom, #737373, #737373, #737373, #d0d0d0, #737373, #737373) !important;
+    box-shadow: 0 0 10px 0px #4a4a4a !important;
+  }
+  .isActiveA2 {
+    background-image: linear-gradient(to bottom, #ffdc8f, #ff822f) !important;
+    color: white !important;
+  }
+  .isActiveB {
+    color: #FF3E05 !important;
+  }
+  .isActiveC {
+    color: #fff100 !important;
+  }
+
+</style>

@@ -1,0 +1,68 @@
+<template>
+  <div id="VOD_con">
+    <div class="everyBlock" v-for="(item, index) in VOD_conList">
+      <img :src="item.imgUrl" alt="">
+      <p class="name">{{item.name}}</p>
+    </div>
+  </div>
+</template>
+
+<script>
+  import img1 from '@/assets/images/31.png'
+  import img2 from '@/assets/images/32.png'
+  import img3 from '@/assets/images/33.png'
+  import img4 from '@/assets/images/41.png'
+  import img5 from '@/assets/images/42.png'
+  import img6 from '@/assets/images/43.png'
+  import img7 from '@/assets/images/51.png'
+  import img8 from '@/assets/images/52.png'
+  import img9 from '@/assets/images/53.png'
+
+  export default {
+    data(){
+      return {
+        VOD_conList:[
+          {imgUrl: img1, name: "最萌身高差"},
+          {imgUrl: img2, name: "音乐之声（国语）"},
+          {imgUrl: img3, name: "湄公河行动"},
+          {imgUrl: img4, name: "大秦帝国崛起"},
+          {imgUrl: img5, name: "爱的追踪"},
+          {imgUrl: img6, name: "黎明决战"},
+          {imgUrl: img7, name: "今晚80后脱口秀"},
+          {imgUrl: img8, name: "养生堂"},
+          {imgUrl: img9, name: "我们十七岁"}
+        ]
+      }
+    }
+  }
+</script>
+
+<style scoped>
+
+  #VOD_con {
+    overflow: hidden;
+    background-color: #fff;
+    padding: 8px 8px 0 8px;
+  }
+
+  /*每小块*/
+  .everyBlock {
+    width: 32%;
+    float: left;
+    margin-right: 2%;
+  }
+  .everyBlock:nth-child(3n) {
+    margin-right: 0;
+  }
+  .name {
+    width: 100%;
+    clear: both;
+    white-space:nowrap;
+    text-overflow:ellipsis;
+    overflow:hidden;
+    font-size: 14px;
+    margin: 4px 0 4px 0;
+    text-align: center;
+    color: #212121;
+  }
+</style>

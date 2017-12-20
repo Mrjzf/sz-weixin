@@ -1,0 +1,138 @@
+<template>
+  <div class="templ">
+
+    <!--向head发送数据-->
+    <RecordHead :torecordhead="torecordhead"></RecordHead>
+
+
+    <section @touchend ="toNext" @touchstart="judge">
+      <RecordTime></RecordTime>
+      <!--这里用v-for来循环-->
+      <ul>
+        <li class="db">
+          <img src="../../assets/dianshitai.png" alt='北京电视台' />
+          <hgroup>
+            <h1>{{tv}}</h1>
+            <h1>{{number | formatNumber}}</h1>
+            <h2>{{time | formatTime}}</h2>
+          </hgroup>
+        </li>
+        <li class="db">
+          <img src="../../assets/dianshitai.png" alt='北京电视台' />
+          <hgroup>
+            <h1>{{tv}}</h1>
+            <h1>{{number | formatNumber}}</h1>
+            <h2>{{time | formatTime}}</h2>
+          </hgroup>
+        </li>
+
+      </ul>
+      <RecordTime></RecordTime>
+      <ul>
+        <li class="db">
+          <img src="../../assets/dianshitai.png" alt='北京电视台' />
+          <hgroup>
+            <h1>{{tv}}</h1>
+            <h1>{{number | formatNumber}}</h1>
+            <h2>{{time | formatTime}}</h2>
+          </hgroup>
+        </li>
+        <li class="db">
+          <img src="../../assets/dianshitai.png" alt='北京电视台' />
+          <hgroup>
+            <h1>{{tv}}</h1>
+            <h1>{{number | formatNumber}}</h1>
+            <h2>{{time | formatTime}}</h2>
+          </hgroup>
+        </li>
+
+      </ul>
+    </section>
+
+
+  </div>
+</template>
+
+<script>
+import RecordHead from './RecordHead.vue';
+import RecordTime from './RecordTime.vue';
+
+
+export default {
+	data: function() {
+		return {
+		  tv:'寒山寺',
+      number:5,
+      time:'12:00',
+      torecordhead:3,
+      startX:0,
+      endX:0,
+      changeX:0
+		}
+	},
+  methods:{
+
+    //在点击屏幕开始收集坐标数据
+    judge:function (e) {
+      this.startX=e.changedTouches[0].clientX;
+    },
+    //判断滑动方向,模仿点击事件
+    //大于10像素就判断为滑动
+    toNext:function (e) {
+      this.endX=e.changedTouches[0].clientX;
+      this.changeX=this.startX-this.endX;
+      if((Math.abs(this.changeX)>10)&&this.changeX>0){
+        //do nothing
+      }else if((Math.abs(this.changeX)>10)&&this.changeX<0){
+        document.getElementById('huikan').click();
+      }
+    }
+  },
+	components:{
+    RecordHead,
+    RecordTime
+  }
+}
+</script>
+
+<style scoped>
+
+.db{
+  position:relative;
+  height:82px;
+  border-bottom: 1px solid #eee;
+  background-color: #fff;
+}
+
+hgroup{
+  position: absolute;
+  left:87px;
+  top: 18px;
+}
+h1{
+  display: inline-block;
+  font-weight: normal;
+  font-size:15px;
+  font-family:"Microsoft YaHei";
+  color:#3C3C3C;
+
+}
+h2{
+  padding-top: 16px;
+  font-weight: normal;
+  font-family: "Microsoft YaHei";
+  font-size:14px;
+  color:#999;
+}
+
+
+img{
+  position:absolute;
+  top:16px;
+  left:16px;
+  width:60px;
+  height:60px;
+  border:1px solid #eee;
+}
+
+</style>

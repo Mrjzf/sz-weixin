@@ -1,0 +1,117 @@
+@font-face {
+  font-family: 'icomoon';
+  src:  url('../fonts/icomoon.eot?2p3zjk');
+  src:  url('../fonts/icomoon.eot?2p3zjk#iefix') format('embedded-opentype'),
+    url('../fonts/icomoon.ttf?2p3zjk') format('truetype'),
+    url('../fonts/icomoon.woff?2p3zjk') format('woff'),
+    url('../fonts/icomoon.svg?2p3zjk#icomoon') format('svg');
+  font-weight: normal;
+  font-style: normal;
+}
+
+[class^="icon-"], [class*=" icon-"] {
+  /* use !important to prevent issues with browser extensions that change fonts */
+  font-family: 'icomoon' !important;
+  speak: none;
+  font-style: normal;
+  font-weight: normal;
+  font-variant: normal;
+  text-transform: none;
+  line-height: 1;
+
+  /* Better Font Rendering =========== */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.icon-chs_sywx_ic_delete:before {
+  content: "\e900";
+}
+.icon-chs_sywx_ic_detail_like:before {
+  content: "\e901";
+}
+.icon-chs_sywx_ic_detail_news:before {
+  content: "\e902";
+}
+.icon-chs_sywx_ic_detail_phone:before {
+  content: "\e903";
+}
+.icon-chs_sywx_ic_detail_share:before {
+  content: "\e904";
+}
+.icon-chs_sywx_ic_detail_tp:before {
+  content: "\e905";
+}
+.icon-chs_sywx_ic_film:before {
+  content: "\e906";
+}
+.icon-chs_sywx_ic_history:before {
+  content: "\e907";
+}
+.icon-chs_sywx_ic_home:before {
+  content: "\e908";
+}
+.icon-chs_sywx_ic_home_s:before {
+  content: "\e909";
+}
+.icon-chs_sywx_ic_jt:before {
+  content: "\e90a";
+}
+.icon-chs_sywx_ic_jt_left:before {
+  content: "\e90b";
+}
+.icon-chs_sywx_ic_live:before {
+  content: "\e90c";
+}
+.icon-chs_sywx_ic_living:before {
+  content: "\e90d";
+}
+.icon-chs_sywx_ic_living_s:before {
+  content: "\e90e";
+}
+.icon-chs_sywx_ic_my:before {
+  content: "\e90f";
+}
+.icon-chs_sywx_ic_my_box:before {
+  content: "\e910";
+}
+.icon-chs_sywx_ic_my_coll:before {
+  content: "\e911";
+}
+.icon-chs_sywx_ic_my_help:before {
+  content: "\e912";
+}
+.icon-chs_sywx_ic_my_history:before {
+  content: "\e913";
+}
+.icon-chs_sywx_ic_my_jt:before {
+  content: "\e914";
+}
+.icon-chs_sywx_ic_my_s:before {
+  content: "\e915";
+}
+.icon-chs_sywx_ic_my_setting:before {
+  content: "\e916";
+}
+.icon-chs_sywx_ic_rc:before {
+  content: "\e917";
+}
+.icon-chs_sywx_ic_rc_s:before {
+  content: "\e918";
+}
+.icon-chs_sywx_ic_retina:before {
+  content: "\e919";
+}
+.icon-chs_sywx_ic_search:before {
+  content: "\e91a";
+}
+.icon-chs_sywx_ic_star:before {
+  content: "\e91b";
+}
+.icon-chs_sywx_ic_vod:before {
+  content: "\e91c";
+}
+.icon-chs_sywx_ic_vod_s:before {
+  content: "\e91d";
+}
+

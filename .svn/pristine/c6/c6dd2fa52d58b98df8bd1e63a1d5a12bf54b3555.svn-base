@@ -1,0 +1,220 @@
+<template>
+  <div class="templ">
+
+    <LiveHead :tolivehead="tolivehead"></LiveHead>
+    <!--<div class="clearfixed"></div>-->
+
+    <!--<router-view></router-view>-->
+
+    <section>
+      <div class="comment">
+        评论{{comments1.pageInfo.totalNum | formatCommentNum}}
+        <div id="dash"></div>
+      </div>
+      <div class="input">
+        <input placeholder="我也来说几句..."/>
+        <span class="icon-chs_sywx_ic_detail_news"></span>
+      </div>
+
+      <ul>
+        <li v-for="(item, index) in comments1.commentList.comment">
+          <img src="../../assets/touxiang.png" />
+          <h2>{{item.clientAlias}}<span>{{item.createdTime}}</span></h2>
+          <h1>{{item.commentContent}}</h1>
+          <h3>{{index | formatFloor}}</h3>
+        </li>
+      </ul>
+    </section>
+
+    <div id="footerHeight"></div>
+
+  </div>
+</template>
+
+<script>
+import LiveHead from './LiveHead.vue'
+
+  export default {
+  data: function() {
+    return {
+      commentNum:5,
+      comments:[
+        {content:"我是评论我是评论",user:'小样',date:'4月22日'},
+        {content:"我是评论我是评论",user:'小样',date:'4月22日'},
+        {content:"我是评论我是评论",user:'小样',date:'4月22日'},
+        {content:"我是评论我是评论",user:'小样',date:'4月22日'},
+        {content:"我是评论我是评论",user:'小样',date:'4月22日'},
+        {content:"我是评论我是评论",user:'小样',date:'4月22日'},
+        {content:"我是评论我是评论",user:'小样',date:'4月22日'}
+      ],
+      comments1: this.$store.commentList,
+      tolivehead:3,
+      startX:0,
+      endX:0,
+      changeX:0,
+      startY:0,
+      endY:0,
+      changeY:0
+    }
+  },
+  created(){
+//    this.getComment();
+  },
+  filters:{
+    formatCommentNum:function (num) {
+      return '('+num+'条'+')';
+    },
+    formatFloor:function (num) {
+      return num + 1 +'层';
+    }
+  },
+  components:{
+    LiveHead
+  },
+  methods:{
+
+    //在点击屏幕开始收集坐标数据
+    judge:function (e) {
+      this.startX=e.changedTouches[0].clientX;
+      this.startY=e.changedTouches[0].clientY;
+    },
+    //判断滑动方向,模仿点击事件
+    toNext:function (e) {
+      this.endX=e.changedTouches[0].clientX;
+      this.endY=e.changedTouches[0].clientY;
+      this.changeX=this.startX-this.endX;
+      this.changeY=this.startY-this.endY;
+      if((Math.abs(this.changeX)>25)&&this.changeX>0){
+        //do nothing
+      }else if((Math.abs(this.changeX)>25)&&this.changeX<0&&
+        (Math.abs(this.changeX)>Math.abs(this.changeY))){
+        document.getElementById('show').click();
+      }
+    },
+    getComment(){
+//      var url = "/cms/thirdPartyPortalInterface/listComment.service?contentType=cpg_channel&resFormat=json&targetType=mobile&contentId=204465";
+//
+//      this.$http.get(url).then(res => {
+//        var data = res.body;
+//        console.log(data);
+//      }, res => {
+//        console.log("错误！" + res);
+//      })
+      console.log(this.comments1.commentList.comment);
+    }
+  }
+};
+
+</script>
+
+<style scoped>
+.clearfixed{
+  height:255px;
+}
+
+section{
+  background-color: #fff;
+  margin-top: 75vw;
+}
+/*评论条数  */
+.comment{
+  position: relative;
+  height:41px;
+  font-size:16px;
+  font-family: "Microsoft YaHei";
+  color:#3C3C3C;
+  line-height:41px;
+  padding-left: 20px;
+  border-bottom: 1px solid #eee;
+}
+.comment #dash{
+  width:4px;
+  height:19px;
+  background-color:#FF3E05;
+  position: absolute;
+  left:8px;
+  top:11px;
+  border-radius: 4px;
+}
+
+
+/*输入框*/
+.input{
+  height:72px;
+  text-align: center;
+  line-height: 72px;
+  border-bottom: 1px solid #eee;
+  position: relative;
+}
+input{
+  border: 0;
+  border-radius: 41px;
+  background-color: #F3F3F3;
+  width:296px;
+  height:41px;
+  color:#222222;
+  font-size:13px;
+  font-family: "Microsoft Yahei";
+  text-align:center;
+}
+input::-webkit-input-placeholder{
+  color:#222222;
+  font-size:13px;
+  font-family: "Microsoft Yahei";
+}
+/*怎么保证这个图标离字的距离保持一定*/
+.icon-chs_sywx_ic_detail_news{
+  font-size:17px;
+  color:#222222;
+  position: absolute;
+  left:31%;
+  top:30px;
+}
+
+
+/*评论详情  */
+li{
+  position: relative;
+  min-height:62px;
+  border-bottom: 1px solid #eee;
+}
+img{
+  border-radius: 50%;
+  position:absolute;
+  left:17px;
+  top:15px;
+}
+h2{
+  margin:0;
+  padding-left:55px;
+  padding-top: 13px;
+  font-size:12px;
+  color:#979797;
+  font-family: "Microsoft YaHei";
+}
+h2 span{
+  font-size:11px;
+  padding-left: 8px;
+}
+h1{
+  margin:0;
+  padding: 9px 10px 0 55px;
+  font-size:17px;
+  color:#000000;
+  font-family: "Microsoft YaHei";
+}
+h3{
+  margin:0;
+  position: absolute;
+  right:15px;
+  top:16px;
+  font-size:12px;
+  color:#979797;
+  font-family: "Microsoft YaHei";
+}
+
+  #footerHeight {
+    margin-bottom: 9vh;
+  }
+</style>
+

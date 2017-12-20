@@ -1,0 +1,382 @@
+<template>
+  <div id="recommend">
+
+    <top></top>
+
+      <mt-loadmore :top-method="getMsg" @top-status-change="handleTopChange" ref="loadmore">
+        <div>
+          <banner :data="banner_List"></banner>
+          <reacommend1 fromReacommend="基本频道推荐" :data="JBPDTJ_List" v-show="!JBPDTJ_List.length==0"></reacommend1>
+          <reacommend1 fromReacommend="付费频道推荐" :data="FFPDTJ_List" v-show="!JBPDTJ_List.length==0"></reacommend1>
+          <reacommend2 :data="ZJTJ_List"></reacommend2>
+          <reacommend3 fromReacommend="高清电影推荐" :data="GQDYTJ_List"></reacommend3>
+          <reacommend3 fromReacommend="高清剧集推荐" :data="GQJJTJ_List"></reacommend3>
+          <reacommend3 fromReacommend="综合高清推荐" :data="ZHGQTJ_List"></reacommend3>
+        </div>
+        <div slot="top" class="mint-loadmore-top">
+          <div v-show="topStatus !== 'loading'" >
+            <span :class="{'rotate': topStatus === 'drop'}">↓</span>
+            <span v-if="topStatus === 'pull'">&nbsp;下拉刷新</span>
+            <span v-else>&nbsp;释放刷新</span>
+          </div>
+          <span v-show="topStatus === 'loading'">Loading...</span>
+        </div>
+        <div class="footFont">
+          —— 多屏观影 极致体验 ——
+        </div>
+      </mt-loadmore>
+  </div>
+</template>
+
+<script>
+
+  import reacommend1 from '@/components/Recommend/Recommend_Public/Recommend1.vue'
+  import reacommend2 from '@/components/Recommend/Recommend_Public/Recommend2.vue'
+  import reacommend3 from '@/components/Recommend/Recommend_Public/Recommend3.vue'
+  import top from '@/components/All_Public/Top.vue'
+  import banner from '@/components/VOD/VOD_banner.vue'
+  import '@/assets/js/md5.min'
+  import '@/assets/js/utils'
+  import { Toast } from 'mint-ui';
+  import wx from 'weixin-js-sdk'
+
+  export default {
+    data(){
+      return {
+        banner_List: [],
+        JBPDTJ_List: [],
+        FFPDTJ_List: [],
+        ZJTJ_List: [],
+        GQDYTJ_List: [],
+        GQJJTJ_List: [],
+        ZHGQTJ_List: [],
+        topStatus: "",
+        toast: null
+      }
+    },
+    components: {
+      reacommend1,
+      reacommend2,
+      reacommend3,
+      top,
+      banner
+    },
+    created(){
+      this.toast = Toast("加载中...");
+      this.getMsg();
+      this.getUrl();
+      this.dengluzhuce();
+//      this.login();
+    },
+    updated(){
+      this.Swiper();
+      this.change();
+//      this.Swiper2();
+      this.toast.close();
+      this.readyShare2();
+    },
+    mounted() {
+      this.$store.commit("isAppShow", true);
+//      this.$router.push({path: "/Recommend"});
+    },
+    destroyed() {
+      this.$store.commit("isAppShow", false);
+    },
+    computed: {},
+    methods: {
+      getMsg(){
+        var url = "/cms/thirdPartyPortalInterfaceV2/getHomePageUIFeatureDataList.service?featureCode=TuiJian";
+        this.$http.get(url).then(res => {
+            for (var i = 0; i < res.body.childFeatureList.length; i++) {
+              this.banner_List = res.body.childFeatureList[0].childDataList
+              this.JBPDTJ_List = res.body.childFeatureList[1].childDataList;
+              this.FFPDTJ_List = res.body.childFeatureList[2].childDataList;
+              this.ZJTJ_List = res.body.childFeatureList[3].childDataList;
+              this.GQDYTJ_List = res.body.childFeatureList[4].childDataList;
+              this.GQJJTJ_List = res.body.childFeatureList[5].childDataList;
+              this.ZHGQTJ_List = res.body.childFeatureList[6].childDataList;
+            }
+            this.$refs.loadmore.onTopLoaded();
+          },
+          res => {
+            console.log("错误！" + res);
+          })
+      },
+      Swiper(){
+        if (this.banner_List.length != 0 && this.ZJTJ_List.length != 0) {
+          new Swiper('.TJDT .swiper-container', {
+            pagination: '.TJDT .swiper-pagination',
+            autoHeight: true,
+            autoplay: 4000,
+            paginationClickable: true,
+            autoplayDisableOnInteraction: false
+          });
+        }
+      },
+      Swiper2(){
+        var _vue = this;
+        new Swiper('#bigbox>.swiper-container', {
+          slidesPerView: 'auto',
+          autoHeight: true,
+          freeMode: true,
+          direction: 'vertical',
+          observer: true,
+          freeModeMomentumRatio: 2,
+          freeModeMomentumVelocityRatio: 2,
+        });
+      },
+      change(){
+//        for (var i = 0; i < this.banner_List.length; i++) {
+//          if (this.banner_List[i].contentType !== "movie") {
+//            console.log(this.banner_List[i]);
+//          }
+//        }
+        for (var i = 0; i < this.banner_List.length; i++) {
+          if (this.banner_List[i].contentType == "cms_content") {
+            this.banner_List.splice(i, 1);
+          }
+        }
+//        for (var i = 0; i < this.GQDYTJ_List.length; i++) {
+//          this.GQDYTJ_List[i].contentType = "movie";
+//        }
+//        for (var i = 0; i < this.GQJJTJ_List.length; i++) {
+//          this.GQJJTJ_List[i].contentType = "package";
+//        }
+//        for (var i = 0; i < this.ZHGQTJ_List.length; i++) {
+//          this.ZHGQTJ_List[i].contentType = "package";
+//          this.ZHGQTJ_List[i].aaa = "zhgq"
+//        }
+      },
+      goContent(id, type){
+        this.$router.push({path: 'detail', query: {id: id, type: type}});
+      },
+      getUrl(){
+//        alert(window.location.href);
+        if (this.$store.state.openid == 0) {
+
+          this.$store.commit("openid", this.$route.query.openid);
+          this.$store.commit("nickName", this.$route.query.nickname);
+          this.$store.commit("headImg", this.$route.query.headimgurl);
+
+        }
+//        console.log("recommend.vue",this.$store.state.openid);
+       /* console.log(this.$store.state.nickName);
+        console.log(this.$store.state.headImg);
+        alert(this.$route.query.openid);
+        alert(this.$route.query.nickname);
+        alert(this.$route.query.headimgurl);
+        alert(this.$store.state.openid);
+        alert(this.$store.state.nickName);
+        alert(this.$store.state.headImg);*/
+      },
+      handleTopChange(status){
+        this.topStatus = status
+      },
+      login() {
+        if (this.$store.state.openid == 0 || this.$store.state.openid == undefined || this.$store.state.openid == -1) {
+          return
+        }
+        var msmp_appkey = "76579579da14418ba97b1cbe38366410";
+        //login的URL 参数 sign的设置
+        var login_params = "loginname=" + this.$store.state.openid + "&loginpwd=123456&devicetype=7&logintype=wechat&resultformat=JSON";
+        var login_sign = getSign(login_params + msmp_appkey);
+        var login_url = "/msmp/nscreen/login.action?loginname=" + this.$store.state.openid + "&loginpwd=123456&devicetype=7&logintype=wechat&resultformat=JSON&sign=" + login_sign;
+        //发送登录请求
+        this.$http.get(login_url, {headers: {Authorization: "Basic " + btoa("screen:screen123")}}).then(res => {
+          var login_data = res.body;
+          //将userid存入vuex
+          this.$store.commit("userID", login_data.userid == "" ? 0 : login_data.userid);
+
+          //查询用户有没有头像和昵称
+//          this.checkUserMsg();
+
+          var userinfo_params = "userid=" + this.$store.state.userID + "&loginpwd=123456&devicetype=7&aliasname=" + encodeURI(this.$store.state.nickName) + "&avatar=" + this.$store.state.headImg;
+          var userinfo_sign = getSign(userinfo_params + msmp_appkey);
+          var userinfo_url = "/msmp/nscreen/modifynscreenuserinfo.action?userid=" + this.$store.state.userID + "&loginpwd=123456&devicetype=7&aliasname=" + encodeURI(this.$store.state.nickName) + "&avatar=" + this.$store.state.headImg + "&sign=" + userinfo_sign;
+
+          this.$http.get(userinfo_url, {headers: {Authorization: "Basic " + btoa("screen:screen123")}}).then(res => {
+            var data = res.body;
+          }, res => {
+            alert("用户名出错！")
+          })
+
+          var chaxun_url = "/cms/externalmsmp/getnscreenbindclient.service?userid=" + this.$store.state.userID + "&devicetype=7";
+
+          this.$http.get(chaxun_url).then(res => {
+            var chaxun_data = res.body;
+
+            if (chaxun_data.clientlist.length == 1) {
+              this.$store.commit("STBid", chaxun_data.clientlist[0].clientid);
+              this.$store.commit("STBname", chaxun_data.clientlist[0].clientname);
+              this.$store.commit("STBactiveIndex", 0);
+            } else {
+              return
+            }
+
+          }, res => {
+            alert("查询接口出错!");
+          })
+        }, res => {
+          alert("登录2接口错误！");
+        })
+
+      },
+      dengluzhuce() {
+        //1
+        //有效则绑定机顶盒  (先拿userID)
+        //直接拿openid注册，失败则是有账号了
+        var that = this;
+        var msmp_appkey = "76579579da14418ba97b1cbe38366410";
+
+        var register_params = 'loginname=' + that.$store.state.openid + '&loginpwd=123456&devicetype=7&logintype=wechat&status=0&recommendno=&deviceno=' + that.$store.state.openid;
+
+        var register_sign = getSign(register_params + msmp_appkey);
+
+        var register_url = '/msmp/nscreen/register.action?loginname=' + that.$store.state.openid + '&loginpwd=123456&devicetype=7&logintype=wechat&status=0&recommendno=&deviceno=' + that.$store.state.openid + '&sign=' + register_sign;
+        that.$http.get(register_url, {headers: {Authorization: "Basic " + btoa("screen:screen123")}}).then(res => {
+          var register_data = res.body;
+          var uid = register_data.substring(register_data.indexOf("<userid>") + 8, (register_data.indexOf("</userid>")));   //存储userid
+          var code = register_data.substring(register_data.indexOf("<errorcode>") + 11, (register_data.indexOf("</errorcode>")));   //存储状态码
+
+          if (code == "-3") {
+            alert("超过最大绑定用户数!");
+          }
+          //登录1
+          else if (code == "0") {
+            that.login();
+          }
+          //登录2
+          else if (code == "-1") {
+            that.login();
+          }
+        }, res => {
+          alert("注册接口出错！请稍候再试!");
+        })
+      },
+      checkUserMsg() {
+        if (this.$store.state.openid == 0 || this.$store.state.openid == undefined || this.$store.state.openid == -1) {
+          return
+        }
+        var msmp_appkey = "76579579da14418ba97b1cbe38366410";
+
+        var check_params = "userid=" + this.$store.state.userID + "&devicetype=7&resultformat=JSON";
+        var check_sign = getSign(check_params + msmp_appkey);
+        var check_url = "/msmp/nscreen/getnscreenuserinfo.action?userid=" + this.$store.state.userID + "&devicetype=7&resultformat=JSON&sign=" + check_sign;
+
+        this.$http.get(check_url, {headers: {Authorization: "Basic " + btoa("screen:screen123")}}).then(res => {
+          var data = res.body;
+          //var code = register_data.substring(register_data.indexOf("<errorcode>") + 11, (register_data.indexOf("</errorcode>")));   //存储状态码
+        }, res => {
+
+        })
+      },
+      readyShare2() {
+        wx.onMenuShareTimeline({
+          title: "我正在看苏州有线微信电视",
+          link: "http://wxtv1.chsvision.com/wxtv/#/Recommend",
+          imgUrl: 'https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1498053089304&di=c16344e7decb8004e7b06eb23eac259a&imgtype=0&src=http%3A%2F%2Fimg.25pp.com%2Fuploadfile%2Fapp%2Ficon%2F20160202%2F1454373232648196.jpg',
+          success: function () {
+
+          },
+          cancel: function () {
+          }
+        });
+
+        wx.onMenuShareAppMessage({
+          title: '我正在看苏州有线微信电视', // 分享标题
+          desc: '快和我一起看苏州有线微信电视吧~~', // 分享描述
+          link: 'http://wxtv1.chsvision.com/wxtv/#/Recommend', // 分享链接，该链接域名或路径必须与当前页面对应的公众号JS安全域名一致
+          imgUrl: 'https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1498053089304&di=c16344e7decb8004e7b06eb23eac259a&imgtype=0&src=http%3A%2F%2Fimg.25pp.com%2Fuploadfile%2Fapp%2Ficon%2F20160202%2F1454373232648196.jpg', // 分享图标
+          type: '', // 分享类型,music、video或link，不填默认为link
+          dataUrl: '', // 如果type是music或video，则要提供数据链接，默认为空
+          success: function () {
+            // 用户确认分享后执行的回调函数
+          },
+          cancel: function () {
+            // 用户取消分享后执行的回调函数
+          }
+        });
+
+//        wx.onMenuShareQQ({
+//          title: '我正在看苏州有线微信电视', // 分享标题
+//          desc: '快和我一起看苏州有线微信电视吧~~', // 分享描述
+//          link: 'http://wxtv1.sz96296.com/wxtv/#/', // 分享链接
+//          imgUrl: 'https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1498053089304&di=c16344e7decb8004e7b06eb23eac259a&imgtype=0&src=http%3A%2F%2Fimg.25pp.com%2Fuploadfile%2Fapp%2Ficon%2F20160202%2F1454373232648196.jpg', // 分享图标
+//          success: function () {
+//            // 用户确认分享后执行的回调函数
+//          },
+//          cancel: function () {
+//            // 用户取消分享后执行的回调函数
+//          }
+//        });
+//
+//        wx.onMenuShareQZone({
+//          title: '我正在看苏州有线微信电视', // 分享标题
+//          desc: '快和我一起看苏州有线微信电视吧~~', // 分享描述
+//          link: 'http://wxtv1.sz96296.com/wxtv/#/', // 分享链接
+//          imgUrl: 'https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1498053089304&di=c16344e7decb8004e7b06eb23eac259a&imgtype=0&src=http%3A%2F%2Fimg.25pp.com%2Fuploadfile%2Fapp%2Ficon%2F20160202%2F1454373232648196.jpg', // 分享图标
+//          success: function () {
+//            // 用户确认分享后执行的回调函数
+//          },
+//          cancel: function () {
+//            // 用户取消分享后执行的回调函数
+//          }
+//        });
+      }
+    },
+    filters: {
+      imgChange(v1){
+        var s = Math.random();
+        return "/cms/res/mobilePoster/" + v1 + "?s=" + s;
+      }
+    }
+  }
+</script>
+
+<style scoped>
+
+  #bigbox {
+    /*position: absolute;*/
+    width: 100%;
+    overflow: hidden;
+  }
+  .mint-loadmore {
+    width: 100%;
+    margin-top: 50px;
+    padding-bottom: 9vh;
+  }
+  .mint-loadmore-top span {
+    display: inline-block;
+    vertical-align: middle;
+    transition: all .25s;
+  }
+  .rotate {
+    transform: rotate(180deg);
+  }
+  #tips {
+    width: 100%;
+    height: 6vh;
+    line-height: 6vh;
+    text-align: center;
+  }
+  .tipsShow {
+    display: block;
+  }
+  .tipsHide {
+    display: none;
+  }
+
+  .footFont {
+    width: 100%;
+    height: 50px;
+    line-height: 50px;
+    text-align: center;
+    color: #bdbdbd;
+  }
+
+  img {
+    display: block;
+    width: 100%;
+  }
+
+</style>

@@ -1,0 +1,104 @@
+<template>
+  <div id="recommend2">
+
+    <header>
+      <span class="line"></span>
+      <p>直播推荐</p>
+      <p id="more">抢先专辑点我 ></p>
+    </header>
+
+    <div class="swiper-container">
+      <div class="swiper-wrapper">
+        <div class="swiper-slide" v-for="(item, index) in recommend2List">
+          <img :src="item.imgUrl" alt="">
+          <p class="desc">{{item.desc}}</p>
+        </div>
+      </div>
+    </div>
+
+
+  </div>
+</template>
+
+<script>
+  import img1 from '@/assets/images/21.png'
+  import img2 from '@/assets/images/22.png'
+  import img3 from '@/assets/images/12.png'
+  import img4 from '@/assets/images/12.png'
+
+  export default {
+    data(){
+      return {
+          recommend2List:[
+            {imgUrl: img1, desc: "2017不容错过的战争大片"},
+            {imgUrl: img2, desc: "偶像式宫斗席卷小荧幕"},
+            {imgUrl: img3, desc: "2017不容错过的战争大片啊啊啊"},
+            {imgUrl: img4, desc: "偶像式宫斗席卷小荧幕额额嗯嗯"}
+          ]
+      }
+    },
+    mounted(){
+      this.Swiper();
+    },
+    methods: {
+      Swiper(){
+        new Swiper('.swiper-container', {
+          pagination: '.swiper-pagination',
+          slidesPerView: 2.15,
+          paginationClickable: true,
+          spaceBetween: 8,
+          freeMode: true
+        });
+      }
+    }
+  }
+</script>
+
+<style scoped>
+  * {
+    margin: 0;
+    padding: 0;
+  }
+  #recommend2 {
+    /*width: 100%;*/
+    background-color: #fff;
+    margin-top: 8px;
+    padding: 8px;
+    overflow: hidden;
+  }
+  header {
+    width: 100%;
+    height: 40px;
+    border-bottom: 1px solid #dfdfdf;
+    margin-bottom: 8px;
+  }
+  .line {
+    width: 4px;
+    height: 17px;
+    background-color: #FF3E05;
+    float: left;
+    border-radius: 2px;
+    margin-top: 11px;
+  }
+  header p {
+    float: left;
+    height: 40px;
+    line-height: 40px;
+    color: #3C3C3C;
+    font-size: 16px;
+    margin-left: 8px;
+  }
+  #more {
+    float: right;
+    font-size: 14px;
+    color: #a6a6a6;
+  }
+
+  .swiper-slide {
+    text-align: center;
+  }
+  .desc {
+    color: #212121;
+    text-align: left;
+  }
+</style>

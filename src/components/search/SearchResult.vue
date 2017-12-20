@@ -1,0 +1,462 @@
+<template>
+
+  <!--templ不是整个页面，而是由其中的内容撑开的-->
+  <div id="searchMsg">
+
+    <header>
+      <span class="icon-chs_sywx_ic_jt_left goback" @click="goback"></span>
+      <div class="icon-chs_sywx_ic_search"></div>
+      <input placeholder="请输入搜索内容..." v-model="key"/>
+      <span class="search" @click="getSearch(key, dashIndex);">搜索</span>
+    </header>
+
+    <div id="searchList">
+      <span :class="{dash:dashIndex==index}" v-for="(item, index) in type_List" @click="dashChange(index)">{{ item.name }}</span>
+    </div>
+
+    <div v-if="dashIndex==0" id="vpg_content">
+      <div class="everyBlock" v-for="(item, index) in search_List" @click="goCon(item.contentId, item.showType);">
+        <span class="phoneMark" v-show="item.mobileScreen==1">手机看</span>
+        <img :src="'/cms/res/posters/mobile/' + item.poster" alt="">
+        <p class="name">{{item.contentName}}</p>
+      </div>
+    </div>
+
+    <div v-else-if="dashIndex==1" id="vpg_content2">
+      <div class="everyBlock" v-for="(item, index) in search_List" @click="goLivehead(item.contentId)">
+        <img :src="'/cms/' + item.poster" alt="">
+        <p class="name">{{item.contentName}} : {{item.currProgramName}}</p>
+      </div>
+    </div>
+
+    <div v-else-if="dashIndex==2" id="vpg_content2">
+      <div class="everyBlock" v-for="(item, index) in search_List"
+           @click="goLivehead2(item.contentId, item.startTime, item.programName)">
+        <img :src="'/cms/' + item.poster" alt="">
+        <p class="name">{{item.programName}}</p>
+      </div>
+    </div>
+
+    <div id="nothing" v-show="isShowNoting">
+      <img src="../../assets/images/nothing.png" alt="">
+      <p>搜索暂无结果~</p>
+    </div>
+
+  </div>
+
+</template>
+
+<script>
+  import {Toast} from 'mint-ui';
+
+  export default {
+    data: function () {
+      return {
+        type_List: [
+          {name: "点播列表"},
+          {name: "直播列表"},
+          {name: "回看列表"}
+        ],
+        search_List: [],
+        searchList: [],      //搜索历史
+        isVpgShow: false,
+        isChannelShow: false,
+        isProgramShow: false,
+        isShowNoting: false,
+        toast: null,
+        dashIndex: 0,
+        key: this.$route.query.key
+      }
+    },
+    created: function () {
+      this.getSearch(this.key);
+    },
+    updated(){
+      this.change();
+    },
+    methods: {
+      dashChange(index) {
+        this.getSearch(this.key, index);
+        this.dashIndex = index;
+      },
+      goback: function () {
+        this.$router.go(-1);
+      },
+      getSearch(key, i){
+
+        var isrepeat = false;
+
+        this.search_List = [];
+        this.key = key;
+
+        //搜索历史实现
+        if (localStorage.searchHistory) {
+          if (this.key == "" || this.key.trim() == "") {
+            return
+          }
+          this.searchList = [];
+          this.searchList.push(localStorage.getItem("searchHistory"));
+          this.searchList = this.searchList[0].split(",");
+
+          for (let i = 0; i < this.searchList.length; i++) {
+            if (this.key == this.searchList[i]) {
+              isrepeat = true;
+            }
+          }
+
+          if (isrepeat == false) {
+            this.searchList.push(this.key);
+          }
+
+          localStorage.setItem("searchHistory", this.searchList);
+
+        }
+        else {
+          if (this.key == "" || this.key.trim() == "") {
+            return
+          }
+          localStorage.setItem("searchHistory", this.key);
+          this.searchList.push(this.key);
+          this.searchList.reverse();
+        }
+
+        this.toast = Toast({
+          message: '加载中...',
+          position: 'middle',
+          duration: -1
+        });
+
+        if (i == undefined) {
+          i = 0;
+        }
+        var url;
+        switch (i) {
+          case 0:
+            url = "/cms/thirdPartyPortalInterfaceV2/commonSearchVpg.service?clientId=" + this.$store.state.openid + "&size=&key=" + this.key;
+            break;
+          case 1:
+            url = "/cms/thirdPartyPortalInterfaceV2/commonSearchLive.service?clientId=" + this.$store.state.openid + "&size=&key=" + this.key;
+            break;
+          case 2:
+            url = "/cms/thirdPartyPortalInterfaceV2/commonSearchProgram.service?clientId=" + this.$store.state.openid + "&size=100&key=" + this.key;
+            break;
+        }
+
+        this.$http.get(url).then(res => {
+          var data = res.body;
+          if (data.code == "0") {
+            this.search_List = data.contentList;
+            this.isShowNoting = false;
+
+            if (this.search_List.length == 0) {
+              this.isShowNoting = true;
+            }
+          } else {
+            this.isShowNoting = true;
+          }
+
+          this.toast.close();
+        }, res => {
+          this.toast.close();
+
+          Toast("加载错误，请重新搜索~");
+        })
+      },
+      change(){
+        for (var i = 0; i < this.search_List.length; i++) {
+          if (this.search_List[i].showType == "package-title") {
+            this.search_List[i].aaa = "zhgq";
+          } else if (this.search_List[i].showType == "package-chapter") {
+            this.search_List[i].showType = "package";
+          }
+        }
+      },
+      goCon(id, showType){
+        this.$router.push({path: 'detail', query: {id: id, showType: showType}});
+      },
+      goLivehead(channelId) {
+
+        this.toast = Toast({
+          message: '加载中...',
+          position: 'middle',
+          duration: -1
+        });
+
+        var url = '/cms/thirdPartyPortalInterface/getNScreenChannel.service?resFormat=json&terminalType=mobile&channelId=' + channelId;
+
+        this.$http.get(url).then(res => {
+          var data = res.body.getNScreenChannelResponse.channel;
+
+          this.toast.close();
+
+          this.$router.push({
+            path: '/live/liveHead',
+            query: {
+              shengchannelId: data.shengChannelId,  //shengChannelId
+              channelId: data.id,                   //id
+              name: data.name,                      //name
+              currentShow: data.currentProgram.name,//currentProgram.name
+//                  liveBroadcastAddress: liveBroadcastAddress,//这个不需要
+              bitRate: data.params.bitRate,         //这个不需要
+              frequency: data.params.frequency,     //这个不需要
+              qam: data.params.qam,                 //这个不需要
+              serviceId: data.params.serviceId,     //这个不需要
+              symbolRate: data.params.symbolRate,   //这个不需要
+              poster: data.poster                   //poster
+            }
+          });
+
+        }, res => {
+          this.toast.close();
+          Toast({
+            message: '加载失败!重新点击~',
+            position: 'middle',
+            duration: 1500
+          });
+        })
+
+      },
+      goLivehead2(channelId, time, name) {
+        this.toast = Toast({
+          message: '加载中...',
+          position: 'middle',
+          duration: -1
+        });
+
+        var alldate = '20' + time.substring(0, 6);
+        var date = time.substring(4, 6);
+
+        var url = '/cms/thirdPartyPortalInterface/getNScreenChannel.service?resFormat=json&terminalType=mobile&channelId=' + channelId;
+
+        this.$http.get(url).then(res => {
+          var data = res.body.getNScreenChannelResponse.channel;
+          this.toast.close();
+          this.$router.push({
+            path: '/live/liveHead',
+            query: {
+              shengchannelId: data.shengChannelId,
+              channelId: data.id,
+              name: data.name,      //当前频道名称
+              currentShow: data.currentProgram.name,
+//              liveBroadcastAddress: data.channelUrlList.channelUrl[3].url + "?delay=30",
+              bitRate: data.params.bitRate,
+              frequency: data.params.frequency,
+              qam: data.params.qam,
+              serviceId: data.params.serviceId,
+              symbolRate: data.params.symbolRate,
+              poster: data.poster,
+              searchType: "huikan",   //恒定的字符串“huikan”
+              alldate: alldate,       //回看节目的日期的长日期，例如：20170620
+              date: date,             //回看节目的日期（天）,例如：20170620的回看就传,20
+              huiName: name,           //回看节目的名称
+              huiTime: "20" + time,           //回看节目的名称
+            }
+          });
+
+        }, res => {
+
+        })
+      },
+    }
+  };
+
+</script>
+
+<style scoped>
+
+  #searchMsg {
+    overflow: hidden;
+    background-color: #fff;
+  }
+
+  #searchList {
+    width: 100%;
+    height: 50px;
+    background-color: #fff;
+    position: fixed;
+    top: 49px;
+    z-index: 50;
+  }
+
+  #searchList span {
+    display: block;
+    width: 33.333333%;
+    height: 50px;
+    line-height: 50px;
+    text-align: center;
+    float: left;
+    border-bottom: 1px solid #e5e5e5;
+  }
+
+  .dash {
+    color: #ff3e05;
+    border-bottom: 2px solid #ff3e05 !important;
+  }
+
+  h1, p {
+    margin: 0;
+    line-height: 100%;
+  }
+
+  /* 头部  */
+  header {
+    width: 100%;
+    background-color: #FF3E05;
+    height: 50px;
+    top: 0;
+    position: fixed;
+    z-index: 50;
+  }
+
+  header input {
+
+    height: 30px;
+    line-height: 15px;
+    width: 66%;
+    border: 0;
+    border-radius: 4px;
+    margin: 7.5px 0 0 10%;
+    position: relative;
+    padding-left: 9%;
+  }
+
+  input::-webkit-input-placeholder {
+    color: #999;
+    font-size: 14px;
+    font-family: "Microsoft YaHei";
+  }
+
+  .icon-chs_sywx_ic_jt_left {
+    font-size: 16px;
+  }
+
+  .icon-chs_sywx_ic_search {
+    position: absolute;
+    left: 14%;
+    top: 16px;
+    font-size: 18px;
+    color: #FF3E05;
+    z-index: 9999;
+  }
+
+  header span {
+    color: #fff;
+    font-family: "Microsoft Yahei";
+    font-size: 13px;
+
+  }
+
+  header .goback {
+    position: absolute;
+    top: 16px;
+    left: 3%;
+    line-height: 100%;
+  }
+
+  header .search {
+    position: absolute;
+    top: 18px;
+    right: 4.5%;
+    line-height: 100%;
+  }
+
+  img {
+    width: 100%;
+    border-radius: 5px;
+  }
+
+  /*每小块*/
+  #vpg_content .everyBlock {
+    position: relative;
+    width: 32%;
+    float: left;
+    margin-right: 2%;
+  }
+
+  @media screen and (min-width: 320px) {
+    #vpg_content .everyBlock img {
+      height: 175px;
+    }
+  }
+
+  @media screen and (max-width: 321px) {
+    #vpg_content .everyBlock img {
+      height: 138px;
+    }
+  }
+
+  #vpg_content .everyBlock:nth-child(3n) {
+    margin-right: 0;
+  }
+
+  .name {
+    width: 100%;
+    height: 12px;
+    /*clear: both;*/
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    font-size: 12px;
+    margin: 4px 0 4px 0;
+    text-align: center;
+    color: #212121;
+    padding-top: 5px;
+  }
+
+  #vpg_content {
+    width: 96vw;
+    overflow: hidden;
+    background-color: #fff;
+    margin-top: 100px;
+    padding: 2vw;
+    overflow: hidden;
+  }
+
+  #vpg_content2 {
+    width: 96vw;
+    margin-top: 100px;
+    padding: 2vw;
+    overflow: hidden;
+  }
+
+  #vpg_content2 .everyBlock {
+    position: relative;
+    width: 47vw;
+    float: left;
+  }
+
+  #vpg_content2 .everyBlock:nth-child(odd) {
+    margin-right: 2vw;
+  }
+
+  .everyBlock .phoneMark {
+    position: absolute;
+    right: 0;
+    width: 40%;
+    height: 5vw;
+    line-height: 5vw;
+    text-align: center;
+    font-size: 12px;
+    background-color: #91cc2b;
+    color: #fff;
+    border-radius: 0 0 0 10px;
+  }
+
+  #nothing {
+    margin-top: 20vh;
+    background-color: #fff;
+  }
+
+  #nothing img {
+    width: 40vw;
+    margin: 0 auto;
+  }
+
+  #nothing p {
+    margin-top: 10px;
+    text-align: center;
+    font-size: 16px;
+  }
+
+</style>
+

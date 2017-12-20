@@ -1,0 +1,126 @@
+import wx from 'weixin-js-sdk'
+import Vue from 'vue'
+
+export default {
+
+  weixin() {
+    var url = "/cms/thirdPartyPortalInterface/doWeiXinGetSign.service?url=" + window.location.href;
+
+    Vue.http.get(url).then(res => {
+      var data = res.body;
+      this.wxConfig(data.appid, data.timestamp, data.nonceStr, data.signature);
+    }, res => {
+      console.log("错误!");
+    })
+  },
+  wxConfig(_appid, _timestamp, _nonceStr, _signature) {
+    wx.config({
+      debug: false,
+      appId: _appid,
+      timestamp: _timestamp,
+      nonceStr: _nonceStr,
+      signature: _signature,
+      jsApiList: [
+        'onMenuShareTimeline',
+        'onMenuShareAppMessage',
+        'showOptionMenu',
+        'onMenuShareAppMessage',
+        'scanQRCode'
+      ]
+    })
+
+    wx.ready(function (res) {
+      wx.showOptionMenu();
+
+      // wx.onMenuShareTimeline({
+      //   title: "我正在看苏州有线微信电视",
+      //   link: "http://wxtv1.sz96296.com/wxtv/#/",
+      //   imgUrl: "https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1498053089304&di=c16344e7decb8004e7b06eb23eac259a&imgtype=0&src=http%3A%2F%2Fimg.25pp.com%2Fuploadfile%2Fapp%2Ficon%2F20160202%2F1454373232648196.jpg",
+      //   success: function () {
+      //   },
+      //   cancel: function () {
+      //   }
+      // });
+      //
+      // wx.onMenuShareAppMessage({
+      //   title: '我正在看苏州有线微信电视', // 分享标题
+      //   desc: '快和我一起看苏州有线微信电视吧~~', // 分享描述
+      //   link: 'http://wxtv1.sz96296.com/wxtv/#/', // 分享链接，该链接域名或路径必须与当前页面对应的公众号JS安全域名一致
+      //   imgUrl: 'https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1498053089304&di=c16344e7decb8004e7b06eb23eac259a&imgtype=0&src=http%3A%2F%2Fimg.25pp.com%2Fuploadfile%2Fapp%2Ficon%2F20160202%2F1454373232648196.jpg', // 分享图标
+      //   type: '', // 分享类型,music、video或link，不填默认为link
+      //   dataUrl: '', // 如果type是music或video，则要提供数据链接，默认为空
+      //   success: function () {
+      //     // 用户确认分享后执行的回调函数
+      //   },
+      //   cancel: function () {
+      //     // 用户取消分享后执行的回调函数
+      //   }
+      // });
+
+      // wx.onMenuShareQQ({
+      //   title: '我正在看苏州有线微信电视', // 分享标题
+      //   desc: '快和我一起看苏州有线微信电视吧~~', // 分享描述
+      //   link: 'http://wxtv1.sz96296.com/wxtv/#/', // 分享链接
+      //   imgUrl: 'https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1498053089304&di=c16344e7decb8004e7b06eb23eac259a&imgtype=0&src=http%3A%2F%2Fimg.25pp.com%2Fuploadfile%2Fapp%2Ficon%2F20160202%2F1454373232648196.jpg', // 分享图标
+      //   success: function () {
+      //     // 用户确认分享后执行的回调函数
+      //   },
+      //   cancel: function () {
+      //     // 用户取消分享后执行的回调函数
+      //   }
+      // });
+      //
+      // wx.onMenuShareQZone({
+      //   title: '我正在看苏州有线微信电视', // 分享标题
+      //   desc: '快和我一起看苏州有线微信电视吧~~', // 分享描述
+      //   link: 'http://wxtv1.sz96296.com/wxtv/#/', // 分享链接
+      //   imgUrl: 'https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1498053089304&di=c16344e7decb8004e7b06eb23eac259a&imgtype=0&src=http%3A%2F%2Fimg.25pp.com%2Fuploadfile%2Fapp%2Ficon%2F20160202%2F1454373232648196.jpg', // 分享图标
+      //   success: function () {
+      //     // 用户确认分享后执行的回调函数
+      //   },
+      //   cancel: function () {
+      //     // 用户取消分享后执行的回调函数
+      //   }
+      // });
+
+    })
+    wx.error(function (res) {
+    })
+  },
+  cusShare(_type,_param,_cb){
+    if (this.isReady){
+      switch (_type){
+        case "xx" :
+          break
+        default:
+          wx.onMenuShareTimeline({
+            title: "我正在看苏州有线微信电视",
+            link: "http://wxtv1.sz96296.com/wxtv/#/",
+            imgUrl: "https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1498053089304&di=c16344e7decb8004e7b06eb23eac259a&imgtype=0&src=http%3A%2F%2Fimg.25pp.com%2Fuploadfile%2Fapp%2Ficon%2F20160202%2F1454373232648196.jpg",
+            success: function () {
+            },
+            cancel: function () {
+            }
+          });
+
+          wx.onMenuShareAppMessage({
+            title: '我正在看苏州有线微信电视', // 分享标题
+            desc: '快来下在苏州云媒体APP一起观看电视吧！', // 分享描述
+            link: 'http://wxtv1.sz96296.com/wxtv/#/', // 分享链接，该链接域名或路径必须与当前页面对应的公众号JS安全域名一致
+            imgUrl: 'https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1498053089304&di=c16344e7decb8004e7b06eb23eac259a&imgtype=0&src=http%3A%2F%2Fimg.25pp.com%2Fuploadfile%2Fapp%2Ficon%2F20160202%2F1454373232648196.jpg', // 分享图标
+            type: '', // 分享类型,music、video或link，不填默认为link
+            dataUrl: '', // 如果type是music或video，则要提供数据链接，默认为空
+            success: function () {
+              // 用户确认分享后执行的回调函数
+            },
+            cancel: function () {
+              // 用户取消分享后执行的回调函数
+            }
+          });
+          break;
+      }
+    }
+
+  }
+
+}

@@ -1,0 +1,132 @@
+import Vue from 'vue'
+import Vuex from 'vuex'
+
+Vue.use(Vuex)
+
+const store = new Vuex.Store({
+  state: {
+    isAppShow: false,
+    appIndex: 0,
+    commentList: [],
+    historySearch: [],
+    key2: "",
+    isFirst: true,
+    videoAddress: " ",
+    openid: 0,  //默认为0
+    openid2: "oH3X-vsudC_6fTuP6M3JWOOfFTJ8",
+    openid3: "op3miv-XZ6NkWln0R0Bj6fr62IN0",
+    nickName: "",
+    headImg: "",
+    VOD_index: 0,          //VOD页面的index记录
+    Channel_index: 0,      //Channel页面的index记录
+    Channel_category: "",
+    areaID: "2",   //2是苏州市区,
+    userID: 0,   //绑定机顶盒的userid,
+    STBid: "",     //当前绑定的机顶盒号,02460714220647885
+    STBname: "",     //当前绑定的机顶盒名字,
+    STBactiveIndex: -1,
+    isHaveSTB: false,   //是否绑定了机顶盒
+    connection: null,    //xmpp连接对象
+    isSmallRCshow: true,
+    isRCshow: false,
+    isSpecial: undefined,
+    huikanTime: undefined,  //用户当前看的视频的时间
+
+    //分类标签要用到的
+    region: "",    //电影的地区
+    year: "",    //电影的年份
+    genre: "",    //电影的类型
+    terminal: "",    //电影的支持设备
+    areaActive: 0,    //地区的index
+    yearActive: 0,    //年份的index
+    typeActive: 0,    //类型的index
+    terminalActive: 0,//设备的index
+  },
+  mutations: {
+    isAppShow(_s, _v) {
+      _s.isAppShow = _v;
+    },
+    appIndex(_s, _v) {
+      _s.appIndex = _v;
+    },
+    videoAddress(_s, _v){
+      _s.videoAddress = _v;
+    },
+    openid(_s, _v){
+      _s.openid = _v;
+    },
+    openid2(_s, _v){
+      _s.openid2 = _v;
+    },
+    nickName(_s, _v){
+      _s.nickName = _v;
+    },
+    headImg(_s, _v){
+      _s.headImg = _v;
+    },
+    VODindex(_s, _v) {
+      _s.VOD_index = _v;
+    },
+    Channelindex(_s, _v) {
+      _s.Channel_index = _v;
+    },
+    Channelcategory(_s, _v) {
+      _s.Channel_category = _v;
+    },
+    userID(_s, _v) {
+      _s.userID = _v;
+    },
+    isHaveSTB(_s, _v) {
+      _s.isHaveSTB = _v;
+    },
+    connection(_s, _v) {
+      _s.connection = _v;
+    },
+    STBid(_s, _v) {
+      _s.STBid = _v;
+    },
+    STBactiveIndex(_s, _v) {
+      _s.STBactiveIndex = _v;
+    },
+    STBname(_s, _v) {
+      _s.STBname = _v;
+    },
+    isSmallRCshow(_s, _v) {
+      _s.isSmallRCshow = _v;
+    },
+    isRCshow(_s, _v) {
+      _s.isRCshow = _v;
+    },
+    isSpecial(_s, _v) {
+      _s.isSpecial = _v;
+    },
+    huikanTime(_s, _v) {
+      _s.huikanTime = _v;
+    },
+    region(_s, _v) {
+      _s.region = _v;
+    },
+    year(_s, _v) {
+      _s.year = _v;
+    },
+    genre(_s, _v) {
+      _s.genre = _v;
+    },
+    terminal(_s, _v) {
+      _s.terminal = _v;
+    },
+    areaActive(_s, _v) {
+      _s.areaActive = _v;
+    },
+    yearActive(_s, _v) {
+      _s.yearActive = _v;
+    },
+    typeActive(_s, _v) {
+      _s.typeActive = _v;
+    },
+    terminalActive(_s, _v) {
+      _s.terminalActive = _v;
+    },
+  }
+})
+export default store;

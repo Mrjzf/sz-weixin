@@ -1,0 +1,149 @@
+<template>
+	<div class="templ">
+
+    <!--向head发送数据-->
+    <RecordHead :torecordhead="torecordhead"></RecordHead>
+
+
+    <section @touchend ="toNext" @touchstart="judge">
+      <RecordTime></RecordTime>
+      <!--这里用v-for来渲染数据-->
+      <ul>
+        <li class="hk">
+          <img src="../../assets/dianshitai.png" alt='北京电视台' />
+          <hgroup>
+            <h1>{{play}}</h1>
+            <h1>{{number | formatNumber}}</h1>
+            <h2>{{tv}}</h2>
+            <h3>{{time | formatTime}}</h3>
+          </hgroup>
+        </li>
+        <li class="hk">
+          <img src="../../assets/dianshitai.png" alt='北京电视台' />
+          <hgroup>
+            <h1>{{play}}</h1>
+            <h1>{{number | formatNumber}}</h1>
+            <h2>{{tv}}</h2>
+            <h3>{{time | formatTime}}</h3>
+          </hgroup>
+        </li>
+      </ul>
+
+      <RecordTime></RecordTime>
+      <ul>
+        <li class="hk">
+          <img src="../../assets/dianshitai.png" alt='北京电视台' />
+          <hgroup>
+            <h1>{{play}}</h1>
+            <h1>{{number | formatNumber}}</h1>
+            <h2>{{tv}}</h2>
+            <h3>{{time | formatTime}}</h3>
+          </hgroup>
+        </li>
+        <li class="hk">
+          <img src="../../assets/dianshitai.png" alt='北京电视台' />
+          <hgroup>
+            <h1>{{play}}</h1>
+            <h1>{{number | formatNumber}}</h1>
+            <h2>{{tv}}</h2>
+            <h3>{{time | formatTime}}</h3>
+          </hgroup>
+        </li>
+      </ul>
+    </section>
+
+	</div>
+</template>
+
+<script>
+import RecordHead from './RecordHead.vue';
+import RecordTime from './RecordTime.vue';
+
+
+export default {
+	data: function() {
+		return {
+      play:'寒山令',
+      number:5,
+      tv:'北京卫视',
+      time:'12:00',
+      torecordhead:2,
+      startX:0,
+      endX:0,
+      changeX:0
+		}
+	},
+  methods:{
+
+    //在点击屏幕开始收集坐标数据
+    judge:function (e) {
+      this.startX=e.changedTouches[0].clientX;
+    },
+    //判断滑动方向,模仿点击事件
+    //大于10像素就判断为滑动
+    toNext:function (e) {
+      this.endX=e.changedTouches[0].clientX;
+      this.changeX=this.startX-this.endX;
+      if((Math.abs(this.changeX)>10)&&this.changeX>0){
+        document.getElementById('dianbo').click();
+      }else if((Math.abs(this.changeX)>10)&&this.changeX<0){
+        document.getElementById('zhibo').click();
+      }
+    }
+  },
+	components:{
+  		RecordHead,
+  		RecordTime
+  	}
+}
+</script>
+
+<style scoped>
+
+.hk{
+  position:relative;
+  height:93px;
+  border-bottom: 1px solid #eee;
+  background-color: #fff;
+}
+
+hgroup{
+    position: absolute;
+    left:91px;
+    top: 18px;
+}
+h1{
+  display: inline-block;
+  font-weight: normal;
+  font-size:16px;
+  font-family:"Microsoft YaHei";
+  color:#3C3C3C;
+
+}
+h2{
+  font-weight: normal;
+  font-family: "Microsoft YaHei";
+  font-size:14px;
+  color:#FF4008;
+}
+h3{
+  font-family: "Microsoft YaHei";
+  font-weight:normal;
+  font-size:14px;
+  color:#999;
+}
+
+
+img{
+  position:absolute;
+  top:17px;
+  left:16px;
+  width:60px;
+  height:60px;
+  border:1px solid #eee;
+
+}
+
+
+
+</style>

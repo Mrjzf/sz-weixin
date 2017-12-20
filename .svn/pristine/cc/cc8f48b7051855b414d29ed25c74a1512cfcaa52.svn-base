@@ -1,0 +1,142 @@
+import Vue from 'vue'
+import Router from 'vue-router'
+import store from '../vuex'
+import Service from '../service'
+
+//引入推荐
+// import Recommend from '@/components/Recommend/Recommend.vue'
+const Recommend = resolve => require(['@/components/Recommend/Recommend.vue'], resolve);
+const Rec2Con = resolve => require(['@/components/Recommend/Recommend_Public/Rec2_Con.vue'], resolve);
+
+//引入VOD相关
+const VOD = resolve => require(['@/components/VOD/VOD.vue'], resolve);
+const VOD_Category_Con = resolve => require(['@/components/VOD/VOD_Category_Con/VOD_Category_Con.vue'], resolve);
+
+//引入遥控器
+const RC = resolve => require(['@/components/RC/RC.vue'], resolve);
+
+//引入直播
+const Channel = resolve => require(['@/components/live/Channel.vue'], resolve);
+const Comment = resolve => require(['@/components/live/Comment.vue'], resolve);
+const Show = resolve => require(['@/components/live/Show.vue'], resolve);
+const LiveHead = resolve => require(['@/components/live/LiveHead.vue'], resolve);
+
+//引入搜索
+const Search = resolve => require(['@/components/search/Search.vue'], resolve);
+const SearchResult = resolve => require(['@/components/search/SearchResult.vue'], resolve);
+
+//引入详情
+const Detail = resolve => require(['@/components/detail/Detail.vue'], resolve);
+
+//引入我的
+const My = resolve => require(['@/components/my/My.vue'], resolve);
+
+//引入我的收藏
+const Collection = resolve => require(['@/components/my/Collection/collection_list.vue'], resolve);
+
+//引入播放记录
+const RecordZb = resolve => require(['@/components/record/RecordZb.vue'], resolve);
+const RecordDb = resolve => require(['@/components/record/RecordDb.vue'], resolve);
+const RecordHk = resolve => require(['@/components/record/RecordHk.vue'], resolve);
+
+//引入绑定STB列表
+const STB_list = resolve => require(['@/components/STB/STB_list.vue'], resolve);
+
+Vue.use(Router);
+
+const _router = new Router({
+  linkActiveClass: 'mui-active',
+  // mode: 'history',
+  routes: [
+
+    //search
+    {path: '/search', name: 'Search', component: Search},
+    {path: '/SearchResult', name: 'SearchResult', component: SearchResult},
+    //初始
+    {path: '/', component: Recommend},
+    // { path: '/',  redirect: '/Recommend'},
+    //推荐
+    {path: '/Recommend', name: 'Recommend', component: Recommend},
+    //专辑内容
+    {path: '/Rec2Con', name: 'Rec2Con', component: Rec2Con},
+    //VOD相关
+    {path: '/VOD', name: 'VOD', component: VOD},
+    {path: '/VODCategoryCon', name: 'VOD_Category_Con', component: VOD_Category_Con},
+    //RC
+    {path: '/RC', name: 'RC', component: RC},
+    //detail
+    {path: '/detail', name: 'Detail', component: Detail},
+    //live
+    {path: '/live/Channel', name: 'Channel', component: Channel},
+    {
+      path: '/live/liveHead',
+      name: 'LiveHead',
+      component: LiveHead,
+      beforeEnter: (to, from, next) => {
+
+        // Service.liveUrl(to.query.channelId, (s, v) => {
+        //   if (s != "error") {
+        //     store.commit("videoAddress", v);
+        //   }
+        //   next();
+        // });
+
+        if (to.query.searchType == "huikan") {
+          var url = "/cms/thirdPartyPortalInterface/getProgramList.service?date=" + to.query.alldate + "&channelId=" + to.query.channelId + "&terminalType=mobile&resFormat=json";
+          Vue.http.get(url).then(res => {
+            var data = res.body;
+            for (var i = 0; i < data.getProgramListResponse.programList.program.length; i++) {
+              if (data.getProgramListResponse.programList.program[i].startTime == to.query.huiTime) {
+                var item = data.getProgramListResponse.programList.program[i];
+                store.commit("videoAddress", "http://dp0.sz96296.com:7079/vod/" + item.assetId + "?format=m3u8&targetType=mobile&df=sd&busiType=cpg");
+              }
+            }
+            next();
+          }, res => {
+
+          })
+        } else {
+          next();
+        }
+
+      },
+      children: [
+        {path: '/live/Channel/comment', name: 'Comment', component: Comment},
+        {path: '/live/Channel/show', name: 'Show', component: Show}
+      ]
+    },
+    //my
+    {path: '/my', name: 'My', component: My},
+    //collection
+    {path: '/collection', name: 'collection', component: Collection},
+    //record
+    {path: '/record/recordzb', name: 'RecordZb', component: RecordZb},
+    {path: '/record/recorddb', name: 'RecordDb', component: RecordDb},
+    {path: '/record/recordhk', name: 'RecordHk', component: RecordHk},
+    //STB_list
+    {path: '/STB_list', name: 'STB_list', component: STB_list}
+  ],
+  // scrollBehavior (to, from, savedPosition) {
+  //   return { x: 0, y: 0 }
+  // }
+});
+_router.beforeEach((to, from, next) => {
+
+  // console.log(localStorage.userMsg);
+
+  if (store.state.openid == 0 && localStorage.userMsg) {
+
+    var userMsg = [];
+    userMsg.push(localStorage.getItem("userMsg"));
+    userMsg = userMsg[0].split(",");
+    store.commit("openid", userMsg[0]);
+    store.commit("nickName", userMsg[1]);
+    store.commit("headImg", userMsg[2]);
+  }
+
+  next();
+
+});
+
+export default _router;
+

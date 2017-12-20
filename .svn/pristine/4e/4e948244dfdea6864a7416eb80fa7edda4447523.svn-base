@@ -1,0 +1,244 @@
+<template>
+  <div class="templ">
+
+    <LiveHead :tolivehead="tolivehead"></LiveHead>
+    <!--<div class="clearfixed"></div>-->
+
+    <!--<router-view></router-view>-->
+    <section>
+      <aside>
+
+        <!-- 这里将index作为参数传到changeActive里去 -->
+        <ul>
+          <li v-for="(item,index) in day" :class="{active:isActive==index}"
+              @click="changeActive(index)">{{item}}
+            <div class="dash" v-show="isActive==index"></div>
+          </li>
+        </ul>
+      </aside>
+      <div id="content">
+        <ul>
+          <li v-for="item in showlist">
+            <h1>
+              {{item.startTime | timeInit}} {{item.name}}
+            </h1>
+            <button class="state">{{item.status | statusJudge}}</button>
+          </li>
+        </ul>
+      </div>
+
+    </section>
+
+  </div>
+</template>
+
+<script>
+
+  import LiveHead from './LiveHead.vue'
+
+
+  export default {
+    data: function () {
+      return {
+        day: [],
+        showlist: [],
+        tolivehead: 2,
+        isActive: 0,
+        startX: 0,
+        endX: 0,
+        changeX: 0,
+        startY: 0,
+        endY: 0,
+        changeY: 0
+      }
+    },
+    components: {
+      LiveHead
+    },
+    created(){
+      this.getShowMsg();
+      this.dateInit();
+    },
+    methods: {
+      changeActive: function (index) {
+        this.isActive = index;
+      },
+      getShowMsg(){
+        var time = new Date().getFullYear() + "" + (new Date().getMonth() + 1 < 10 ? "0" + (new Date().getMonth() + 1) : (new Date().getMonth() + 1)) + "" + (new Date().getDate() + 1 < 10 ? "0" + new Date().getDate() : new Date().getDate());
+
+
+        var channelId = this.$route.query.channelId;
+
+        if (channelId == undefined) {
+          channelId = 204455;
+        }
+
+        var url = "/cms/thirdPartyPortalInterface/getProgramList.service?date=" + time + "&channelId=" + channelId + "&terminalType=mobile&resFormat=json",
+            url2 = "/cms/thirdPartyPortalInterface/listComment.service?contentType=cpg_channel&resFormat=json&targetType=mobile&contentId=" + channelId;
+
+
+
+        //获取节目清单
+        this.$http.get(url).then(res => {
+            var data = res.body;
+            this.showlist = data.getProgramListResponse.programList.program;
+          }, res => {
+            console.log("错误！" + res);
+          })
+
+        //当前频道评论
+        this.$http.get(url2).then(res => {
+          var data = res.body;
+//          console.log(data);
+          this.$store.commentList = data.listCommentResponse;
+        }, res => {
+          console.log("错误！" + res);
+        })
+      },
+      //在点击屏幕开始收集坐标数据
+      judge: function (e) {
+        this.startX = e.changedTouches[0].clientX;
+        this.startY = e.changedTouches[0].clientY;
+      },
+      //判断滑动方向,模仿点击事件
+      toNext: function (e) {
+        this.endX = e.changedTouches[0].clientX;
+        this.endY = e.changedTouches[0].clientY;
+        this.changeX = this.startX - this.endX;
+        this.changeY = this.startY - this.endY;
+        if ((Math.abs(this.changeX) > 25) && this.changeX > 0 &&
+          (Math.abs(this.changeX) > Math.abs(this.changeY))) {
+          document.getElementById('comment').click();
+        } else if ((Math.abs(this.changeX) > 25) && this.changeX < 0 &&
+          Math.abs(this.changeX) > Math.abs(this.changeY)) {
+          document.getElementById('channel').click();
+        }
+      },
+      dateInit(){
+        var time = new Date().getFullYear() + "" + (new Date().getMonth() + 1 < 10 ? "0" + (new Date().getMonth() + 1) : (new Date().getMonth() + 1)) + "" + (new Date().getDate() + 1 < 10 ? "0" + new Date().getDate() : new Date().getDate());
+
+        var myDate = new Date(); //获取今天日期
+        myDate.setDate(myDate.getDate() - 6);
+        var dateArray = [];
+        var dateTemp;
+        var flag = 1;
+        for (var i = 0; i < 7; i++) {
+          dateTemp = (myDate.getMonth()+1)+"月"+myDate.getDate() + "日";
+          dateArray.push(dateTemp);
+          myDate.setDate(myDate.getDate() + flag);
+        }
+        dateArray = dateArray.reverse();
+        this.day = dateArray;
+      }
+    },
+    filters: {
+      timeInit(v1){
+        return v1.substring(9);
+      },
+      statusJudge(v1){
+        if (v1 == 0) {
+          return "预告";
+        } else if (v1 == 1) {
+          return "直播中";
+        } else if (v1 == 2) {
+          return "回看";
+        }
+      }
+    }
+  };
+
+</script>
+
+<style scoped>
+  .clearfixed {
+    height: 255px;
+  }
+
+  section {
+    background-color: #fff;
+    margin-top: 75vw;
+  }
+
+  /*左边导航  */
+  aside {
+    border-right: 2px solid #eee;
+    width: 25%;
+    float: left;
+  }
+
+  .clear {
+    clear: both;
+  }
+
+  aside ul li {
+    position: relative;
+    height: 49px;
+    text-align: center;
+    line-height: 49px;
+    font-size: 14px;
+    font-family: "Microsoft YaHei";
+    border-bottom: 1px solid #eee;
+  }
+
+  .dash {
+    width: 2px;
+    background-color: #FF3E05;
+    height: 25px;
+    position: absolute;
+    top: 11px;
+    right: -2px;
+  }
+
+  .active {
+    font-size: 15px;
+    color: #FF3E05;
+  }
+
+  /*右边的content*/
+  #content {
+    width: 74%;
+    float: right;
+  }
+
+  #content ul li {
+    height: 49px;
+    border-bottom: 1px solid #eee;
+    line-height: 49px;
+  }
+
+  h1 {
+    /*margin:18px 0 17px 16px;*/
+    padding-left: 5px;
+    width: 50vw;
+    font-size: 15px;
+    font-family: "Microsoft Yahei";
+    color: #04B456;
+    float: left;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+  }
+
+  .state {
+    text-align: center;
+    width: 18vw;
+    height: 25px;
+    font-size: 12px;
+    color: #04B456;
+    float: right;
+    border: 2px solid #04B456;
+    border-radius: 25px;
+    margin: 12px 10px 0 0;
+    line-height: 23px;
+    background-color: #fff;
+    float: right;
+  }
+
+  section {
+    overflow: hidden;
+    margin-bottom: 50px;
+  }
+
+
+</style>
+

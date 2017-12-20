@@ -1,0 +1,80 @@
+<template>
+    <div id="banner">
+
+      <div class="swiper-container">
+        <div class="swiper-wrapper">
+          <div class="swiper-slide" v-for="(item, index) in data" :key="item.id">
+            <img :src="item.poster | imgChange" alt="" @click="goContent(item.contentId, item.contentType)">
+          </div>
+        </div>
+        <!-- Add Pagination -->
+        <div class="swiper-pagination"></div>
+      </div>
+
+    </div>
+</template>
+
+<script>
+
+  export default {
+    data(){
+      return {
+
+      }
+    },
+    components: {
+
+    },
+    created(){
+
+    },
+    mounted(){
+      this.Swiper();
+
+    },
+    updated(){
+
+    },
+    props: ["data"],
+    methods: {
+      Swiper(){
+        new Swiper('#banner .swiper-container', {
+          pagination: '#banner .swiper-pagination',
+          autoHeight: true,
+          autoplay: 4000,
+          paginationClickable: true,
+          autoplayDisableOnInteraction: false,
+          observer: true
+        });
+      },
+      goContent(id, type, isZhgq){
+        if (type == "movie" || type == "local_vpg_video") {
+          this.$router.push({path: 'detail', query: {id: id, type: type, isZhgq: isZhgq}});
+        } else {
+          return
+        }
+      }
+    },
+    filters: {
+      imgChange(v1){
+        var s = Math.random();
+        return "/cms/res/mobilePoster/" + v1 + "?s=" + s;
+      }
+    }
+  }
+</script>
+
+<style scoped>
+  img {
+    min-height: 156px;
+  }
+
+  #banner {
+    width: 100%;
+    /*margin-top: 13vh;*/
+  }
+  #banner .swiper-pagination {
+    left: 35vw;
+    bottom: 5px
+  }
+</style>

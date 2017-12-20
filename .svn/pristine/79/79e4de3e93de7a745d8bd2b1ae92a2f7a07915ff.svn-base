@@ -1,0 +1,130 @@
+<template>
+  <div id="recommend3">
+
+    <header>
+      <span class="icon-chs_sywx_ic_live"></span>
+      <p>{{ fromReacommend }}</p>
+      <p id="more" @click="goVOD(id);">更多 ></p>
+    </header>
+
+    <div>
+      <div class="everyBlock" v-for="(item, index) in data" @click="goContent(item.contentId, item.contentType, item.aaa)">
+        <img :src="item.poster | imgChange" alt="">
+        <p class="name">{{item.title}}</p>
+      </div>
+    </div>
+
+  </div>
+</template>
+
+<script>
+
+  export default {
+    data(){
+      return {
+        recommend3List: [],
+        id: 0
+      }
+    },
+    props: ['fromReacommend', "data"],
+    mounted(){
+      this.whichWay(this.fromReacommend);
+    },
+    methods: {
+      whichWay(fromReacommend){
+        if (fromReacommend == "高清电影推荐") {
+          this.id = 9511;
+        } else if (fromReacommend == "高清剧集推荐") {
+          this.id = 9512;
+        } else if (fromReacommend == "综合高清推荐") {
+          this.id = 9513;
+        }
+      },
+      goContent(id, type, isZhgq){
+        this.$router.push({path: 'detail', query: {id: id, type: type, isZhgq: isZhgq}});
+      },
+      goVOD(id) {
+        if (id == 9511) {
+          this.$router.push({path: 'VOD', query: {id: id, wf: "gqdytj"}});
+        } else if (id == 9512) {
+          this.$router.push({path: 'VOD', query: {id: id, wf: "gqjjtj"}});
+        } else if (id == 9513) {
+          this.$router.push({path: 'VOD', query: {id: id, wf: "gqzhtj"}});
+        }
+      }
+    },
+    filters: {
+      imgChange(v1){
+        var s = Math.random();
+        return "/cms/res/posters/mobile/" + v1 + "?s=" + s;
+      }
+    }
+  }
+</script>
+
+<style scoped>
+  * {
+    margin: 0;
+    padding: 0;
+  }
+  img {
+    width: 100%;
+  }
+  #recommend3 {
+    /*width: 100%;*/
+    background-color: #fff;
+    padding: 8px;
+    margin-top: 8px;
+    overflow: hidden;
+  }
+
+  header {
+    width: 100%;
+    height: 40px;
+    border-bottom: 1px solid #dfdfdf;
+    margin-bottom: 8px;
+  }
+  .icon-chs_sywx_ic_live {
+    font-size: 25px;
+    line-height: 40px;
+    color: #FF3E05;
+    float: left;
+  }
+  header p {
+    float: left;
+    height: 40px;
+    line-height: 40px;
+    color: #3C3C3C;
+    font-size: 16px;
+    margin-left: 8px;
+  }
+  #more {
+    float: right;
+    font-size: 14px;
+    color: #a6a6a6;
+  }
+
+  /*每小块*/
+  .everyBlock {
+    width: 32%;
+    float: left;
+    margin: 0 2% 2% 0;
+  }
+  .everyBlock img {
+    height: 100%;
+  }
+  .everyBlock:nth-child(3n) {
+    margin-right: 0;
+  }
+  .name {
+    width: 100%;
+    clear: both;
+    white-space:nowrap;
+    text-overflow:ellipsis;
+    overflow:hidden;
+    font-size: 14px;
+    margin: 4px 0 4px 0;
+    text-align: center;
+    color: #212121;
+  }
+</style>

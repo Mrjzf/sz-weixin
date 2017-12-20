@@ -1,0 +1,156 @@
+<template>
+	<div class="templ">
+
+    <!--向head发送数据-->
+    <RecordHead :torecordhead="torecordhead"></RecordHead>
+    <div class="clearFixed"></div>
+
+
+    <section @touchend ="toNext" @touchstart="judge">
+      <div class="time">{{day}}</div>
+      <ul>
+        <li class="hk" v-for="item in content">
+          <img src="../../assets/dianshitai.png" alt='北京电视台' />
+          <hgroup>
+            <h1>{{item.play}}</h1>
+            <h1>{{item.number | formatNumber}}</h1>
+            <h2>{{item.tv}}</h2>
+            <h3>{{item.time | formatTime}}</h3>
+          </hgroup>
+        </li>
+      </ul>
+
+      <div class="time">{{day}}</div>
+      <ul>
+        <li class="hk" v-for="item in content">
+          <img src="../../assets/dianshitai.png" alt='北京电视台' />
+          <hgroup>
+            <h1>{{item.play}}</h1>
+            <h1>{{item.number | formatNumber}}</h1>
+            <h2>{{item.tv}}</h2>
+            <h3>{{item.time | formatTime}}</h3>
+          </hgroup>
+        </li>
+      </ul>
+
+    </section>
+
+    <div id="footerHeight"></div>
+
+	</div>
+</template>
+
+<script>
+import RecordHead from './RecordHead.vue';
+
+
+export default {
+	data: function() {
+		return {
+      content:[
+        {play:'寒山令',number:5,tv:'北京卫视',time:'12:00'},
+        {play:'寒山令',number:5,tv:'北京卫视',time:'12:00'},
+        {play:'寒山令',number:5,tv:'北京卫视',time:'12:00'},
+        {play:'寒山令',number:5,tv:'北京卫视',time:'12:00'}
+      ],
+      day:'2017/04/18 星期二',
+      torecordhead:2,
+      startX:0,
+      endX:0,
+      changeX:0,
+      startY:0,
+      endY:0,
+      changeY:0
+		}
+	},
+  methods:{
+
+    //在点击屏幕开始收集坐标数据
+    judge:function (e) {
+      this.startX=e.changedTouches[0].clientX;
+      this.startY=e.changedTouches[0].clientY;
+    },
+    //判断滑动方向,模仿点击事件
+    toNext:function (e) {
+      this.endX=e.changedTouches[0].clientX;
+      this.endY=e.changedTouches[0].clientY;
+      this.changeX=this.startX-this.endX;
+      this.changeY=this.startY-this.endY;
+      if((Math.abs(this.changeX)>25)&&this.changeX>0&&
+        (Math.abs(this.changeX)>Math.abs(this.changeY))){
+        document.getElementById('dianbo').click();
+      }else if((Math.abs(this.changeX)>25)&&this.changeX<0&&
+        Math.abs(this.changeX)>Math.abs(this.changeY)){
+        document.getElementById('zhibo').click();
+      }
+    }
+  },
+	components:{
+  		RecordHead
+  	}
+}
+</script>
+
+<style scoped>
+.clearFixed{
+  height:52px;
+}
+.time{
+  font-family: "Microsoft YaHei";
+  background-color:#EDEDED;
+  color:#999999;
+  line-height:31px;
+  font-size:13px;
+  text-indent:11px;
+  height:31px;
+}
+.hk{
+  position:relative;
+  height:93px;
+  border-bottom: 1px solid #eee;
+  background-color: #fff;
+}
+
+hgroup{
+    position: absolute;
+    left:91px;
+    top: 18px;
+}
+h1{
+  display: inline-block;
+  font-weight: normal;
+  font-size:16px;
+  font-family:"Microsoft YaHei";
+  color:#3C3C3C;
+
+}
+h2{
+  font-weight: normal;
+  font-family: "Microsoft YaHei";
+  font-size:14px;
+  color:#FF4008;
+}
+h3{
+  font-family: "Microsoft YaHei";
+  font-weight:normal;
+  font-size:14px;
+  color:#999;
+}
+
+
+img{
+  position:absolute;
+  top:17px;
+  left:16px;
+  width:60px;
+  height:60px;
+  border:1px solid #eee;
+
+}
+
+#footerHeight {
+  margin-bottom: 50px;
+}
+
+
+</style>

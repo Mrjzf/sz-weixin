@@ -1,0 +1,125 @@
+<template>
+  <div id="recommend">
+
+    <top></top>
+
+    <!-- Swiper -->
+    <div class="TJDT">
+      <div class="swiper-container">
+        <div class="swiper-wrapper">
+          <div class="swiper-slide" v-for="(item, index) in banner_List" :key="item.id">
+            <img :src="'/cms/res/mobilePoster/' + item.poster" alt="">
+          </div>
+        </div>
+        <!-- Add Pagination -->
+        <div class="swiper-pagination"></div>
+      </div>
+    </div>
+
+    <reacommend1 fromReacommend="基本频道推荐" :data="JBPDTJ_List"></reacommend1>
+
+    <reacommend1 fromReacommend="付费频道推荐" :data="FFPDTJ_List"></reacommend1>
+
+    <reacommend2 :data="ZJTJ_List"></reacommend2>
+
+    <reacommend3 fromReacommend="高清电影推荐" :data="GQDYTJ_List"></reacommend3>
+
+    <reacommend3 fromReacommend="高清剧集推荐" :data="GQJJTJ_List"></reacommend3>
+
+    <reacommend3 fromReacommend="综合高清推荐" :data="ZHGQTJ_List"></reacommend3>
+
+    <div id="footerHeight"></div>
+
+  </div>
+</template>
+
+<script>
+//  import 'mint-ui/lib/style.min.css'
+  import reacommend1 from '@/components/Recommend/Recommend_Public/Recommend1.vue'
+  import reacommend2 from '@/components/Recommend/Recommend_Public/Recommend2.vue'
+  import reacommend3 from '@/components/Recommend/Recommend_Public/Recommend3.vue'
+  import top from '@/components/All_Public/Top.vue'
+
+  export default {
+    data(){
+      return {
+        banner_List: [],
+        JBPDTJ_List: [],
+        FFPDTJ_List: [],
+        ZJTJ_List: [],
+        GQDYTJ_List: [],
+        GQJJTJ_List: [],
+        ZHGQTJ_List: []
+      }
+    },
+    components: {
+      reacommend1,
+      reacommend2,
+      reacommend3,
+      top
+    },
+    created(){
+      this.getMsg();
+    },
+    updated(){
+      this.Swiper();
+    },
+    methods: {
+      getMsg(){
+        var url = "/cms/thirdPartyPortalInterface/getHomePageWeiXinFeature.service?resFormat=json";
+        this.$http.get(url).then(res => {
+            this.list = res.body.featureList[0].dataList;
+            for (var i = 0; i < res.body.featureList.length; i++) {
+              if (res.body.featureList[i].type == "TJDU") {
+                this.banner_List = res.body.featureList[i].dataList;
+              }
+              else if (res.body.featureList[i].type == "JBPDTJ") {
+                this.JBPDTJ_List = res.body.featureList[i].dataList;
+              }
+              else if (res.body.featureList[i].type == "FFPDTJ") {
+                this.FFPDTJ_List = res.body.featureList[i].dataList;
+              }
+              else if (res.body.featureList[i].type == "ZJTJ") {
+                this.ZJTJ_List = res.body.featureList[i].dataList;
+              }
+              else if (res.body.featureList[i].type == "GQDYTJ") {
+                this.GQDYTJ_List = res.body.featureList[i].dataList;
+              }
+              else if (res.body.featureList[i].type == "GQJJTJ") {
+                this.GQJJTJ_List = res.body.featureList[i].dataList;
+              }
+              else if (res.body.featureList[i].type == "ZHGQTJ") {
+                this.ZHGQTJ_List = res.body.featureList[i].dataList;
+              }
+            }
+          },
+          res => {
+            console.log("错误！" + res);
+          })
+      },
+      Swiper(){
+        if (this.banner_List.length != 0) {
+          new Swiper('.TJDT .swiper-container', {
+            pagination: '.TJDT .swiper-pagination',
+            paginationClickable: true
+          });
+        }
+      }
+    }
+  }
+</script>
+
+<style scoped>
+  img {
+    display: block;
+    width: 100%;
+  }
+
+  .swiper-container {
+    margin-top: 8vh;
+  }
+
+  #footerHeight {
+    margin-bottom: 9vh;
+  }
+</style>

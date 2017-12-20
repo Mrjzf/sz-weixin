@@ -1,0 +1,188 @@
+<template>
+  <div id="recommend1">
+
+    <header>
+      <span class="icon-chs_sywx_ic_live"></span>
+      <p>{{ fromReacommend }}</p>
+      <p id="more" @click="goChannel();">更多 ></p>
+    </header>
+
+    <div class="everyBlock" v-for="(item, index) in data" @click="goShow(item.contentId, item.channelName, item.currProgramName, item.liveAddressUrl)">
+      <img :src="item.poster | imgChange" alt="">
+      <!--<div class="channel">-->
+        <!--<img :src="'/cms/res/mobile/' + item.channelLogo" alt="" class="channel_mark">-->
+        <!--<span class="channel_name">{{item.channelName}}</span>-->
+        <!--<span class="channel_name">{{item.channelName}}</span>-->
+      <!--</div>-->
+      <p class="desc1">{{ item.currProgramName | isEmpty }}</p>
+      <p class="desc2">即将播放: {{ item.nextProgramName | isEmpty }}</p>
+    </div>
+
+  </div>
+</template>
+
+<script>
+
+  export default {
+    data(){
+      return {
+
+      }
+    },
+    props: ["fromReacommend", "data"],
+    created(){
+//      this.getMsg(this.fromReacommend);
+    },
+    methods: {
+      getMsg(fromReacommend){
+        if (fromReacommend == "基本频道推荐") {
+          var url = "/cms/thirdPartyPortalInterface/getHomePageWeiXinFeature.service?resFormat=json&featureType=JBPDTJ";
+          this.$http.get(url).then(res => {
+
+              this.recommend1List2 = res.body.featureList[0].dataList;
+            },
+            res => {
+              console.log("错误！" + res);
+            })
+        }
+        else if (fromReacommend == "付费频道推荐") {
+          var url = "/cms/thirdPartyPortalInterface/getHomePageWeiXinFeature.service?resFormat=json&featureType=FFPDTJ";
+          this.$http.get(url).then(res => {
+
+              this.recommend1List2 = res.body.featureList[0].dataList;
+            },
+            res => {
+              console.log("错误！" + res);
+            })
+        }
+      },
+      goChannel(){
+        if (this.fromReacommend == "付费频道推荐") {
+          this.$router.push({path: '/live/channel', query: {whereFrom: "Rec"}});
+          this.$store.commit("isappIndex", true);
+          this.$store.commit("appIndex", 1);
+          this.$store.commit("Channelindex", 4);
+        }
+        else if (this.fromReacommend == "基本频道推荐") {
+          this.$router.push({path: '/live/channel'});
+          this.$store.commit("isappIndex", true);
+          this.$store.commit("appIndex", 1);
+          this.$store.commit("Channelindex", 0);
+        }
+      },
+      goShow(channelId, name, currentShow, liveBroadcastAddress){
+        this.$store.commit("videoAddress", liveBroadcastAddress + "?delay=10");
+        this.$router.push({path: '/live/liveHead',
+          query: {
+            channelId: channelId,
+            name: name,
+            currentShow: currentShow,
+            liveBroadcastAddress: liveBroadcastAddress + "?delay=10"
+          }
+        });
+      }
+    },
+    filters: {
+      imgChange(v1){
+        var s = Math.random();
+        return "/cms/" + v1 + "?s=" + s;
+      },
+      isEmpty(v1) {
+        return v1 == "" ? "暂无节目单" : v1;
+      }
+    }
+  }
+</script>
+
+<style scoped>
+  * {
+    margin: 0;
+    padding: 0;
+  }
+
+  img {
+    width: 100%;
+  }
+
+  #recommend1 {
+    /*width: 100%;*/
+    background-color: #fff;
+    padding: 8px;
+    margin-top: 8px;
+    overflow: hidden;
+  }
+
+  header {
+    width: 100%;
+    height: 40px;
+    border-bottom: 1px solid #dfdfdf;
+    margin-bottom: 8px;
+  }
+
+  .icon-chs_sywx_ic_live {
+    font-size: 25px;
+    line-height: 40px;
+    color: #FF3E05;
+    float: left;
+  }
+
+  header p {
+    float: left;
+    height: 40px;
+    line-height: 40px;
+    color: #3C3C3C;
+    font-size: 16px;
+    margin-left: 8px;
+  }
+
+  #more {
+    float: right;
+    font-size: 14px;
+    color: #a6a6a6;
+  }
+
+  /*每小块*/
+  .everyBlock {
+    width: 49%;
+    float: left;
+    margin-bottom: 5px;
+  }
+
+  .everyBlock:nth-child(2n) {
+    margin-right: 2%;
+  }
+
+  .channel {
+    margin-top: 8px;
+  }
+
+  .channel_mark {
+    width: 18px;
+    float: left;
+    margin-right: 8px;
+  }
+
+  .channel_name {
+    float: left;
+  }
+
+  .desc1 {
+    width: 100%;
+    clear: both;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    font-size: 16px;
+    margin-top: 4px;
+  }
+  .desc2 {
+    width: 100%;
+    clear: both;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    font-size: 12px;
+    margin-top: 4px;
+    color: #808080;
+  }
+</style>

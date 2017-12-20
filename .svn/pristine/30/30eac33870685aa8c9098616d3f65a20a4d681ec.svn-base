@@ -1,0 +1,219 @@
+<template>
+  <div id="VOD_Category_Con">
+
+    <header>
+      <span class="icon-chs_sywx_ic_jt_left" @click="goback()"></span>
+      电影
+      <span class="icon-chs_sywx_ic_search"></span>
+    </header>
+
+    <div id="middleHeight"></div>
+
+    <div id="options" v-show="isAll">
+
+      <div class="option_son">
+        <span>地区</span>
+        <div class="swiper-container">
+          <div class="swiper-wrapper">
+            <div :class="'swiper-slide' | isActive(index, areaActive)" v-for="(item, index) in areaList" @click="isAreaChange(index)">
+              {{item.areaName}}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="option_son">
+        <span>年份</span>
+        <div class="swiper-container">
+          <div class="swiper-wrapper">
+            <div :class="'swiper-slide' | isActive(index2, yearActive)" v-for="(item, index2) in yearList" @click="isYearChange(index2)">
+              {{item.year}}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="option_son">
+        <span>类型</span>
+        <div class="swiper-container">
+          <div class="swiper-wrapper">
+            <div :class="'swiper-slide' | isActive(index, typeActive)" v-for="(item, index) in typeList" @click="isTypeChange(index)">
+              {{item.typeName}}
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <Category_Con></Category_Con>
+
+    <div id="footerHeight"></div>
+
+  </div>
+</template>
+
+<script>
+  import Category_Con from '@/components/VOD/VOD_Category_Con/Category_Con.vue'
+
+  export default {
+    data(){
+      return {
+        isAll: true,
+        areaActive: 0,
+        yearActive: 0,
+        typeActive: 0,
+        areaList: [
+          {areaName: '全部'},
+          {areaName: '内地'},
+          {areaName: '港台'},
+          {areaName: '日韩'},
+          {areaName: '欧美'},
+          {areaName: '印度'},
+          {areaName: '泰国'}
+        ],
+        yearList: [
+          {year: "全部"},
+          {year: "2017"},
+          {year: "2016"},
+          {year: "2015"},
+          {year: "2014"},
+          {year: "2013"},
+          {year: "2012"},
+          {year: "2011"},
+        ],
+        typeList: [
+          {typeName: "全部"},
+          {typeName: "院线"},
+          {typeName: "剧情"},
+          {typeName: "喜剧"},
+          {typeName: "动作"},
+          {typeName: "爱情"},
+          {typeName: "恐怖"},
+          {typeName: "惊悚"},
+        ]
+      }
+    },
+    mounted(){
+      this.Swiper();
+      this.optionIsShow();
+    },
+    methods: {
+      Swiper(){
+        new Swiper('.swiper-container', {
+          slidesPerView: 5,
+          paginationClickable: true,
+          spaceBetween: 5,
+          freeMode: true
+        });
+      },
+      isAreaChange(index){
+        this.areaActive = index;
+      },
+      isYearChange(index){
+        this.yearActive = index;
+      },
+      isTypeChange(index){
+        this.typeActive = index;
+      },
+      optionIsShow(){
+        var typeName = this.$route.params.typeName;
+        if (typeName != "all") {
+          this.isAll = false;
+        } else {
+          this.isAll = true;
+        }
+      },
+      goback(){
+        this.$router.go(-1);
+      }
+    },
+    filters: {
+      isActive(v1, v2, v3){
+        return v2 == v3 ? v1 + " isactive" : v1;
+      }
+    },
+    components: {
+      Category_Con
+    }
+  }
+</script>
+
+<style scoped>
+
+  #VOD_Category_Con {
+    overflow: hidden;
+    background-color: white;
+  }
+
+  header {
+    position: fixed;
+    z-index: 999;
+    width: 100vw;
+    height: 7vh;
+    background-color: #FF3E05;
+    text-align: center;
+    color: white;
+    line-height: 7vh;
+    font-size: 2.7vh;
+  }
+  header .icon-chs_sywx_ic_jt_left {
+    display: block;
+    height: 100%;
+    float: left;
+    font-size: 3vh;
+    line-height: 7vh;
+    margin-left: 3%;
+  }
+  header .icon-chs_sywx_ic_search {
+    display: block;
+    height: 100%;
+    float: right;
+    font-size: 4vh;
+    line-height: 7vh;
+    margin-right: 3%;
+  }
+
+
+  #options .option_son {
+    width: 100%;
+    height: 50px;
+    padding-left: 8px;
+    border-bottom: 1px solid #dbdbdb;
+  }
+  #options .option_son span {
+    display: block;
+    height: 50px;
+    line-height: 50px;
+    float: left;
+    font-weight: 600;
+    position: absolute;
+  }
+
+  .swiper-container {
+    width: 88%;
+    height: 50px;
+    background-color: #fff;
+    text-align: center;
+    float: right;
+    margin-left: 8px;
+    border-bottom: 1px solid #dbdbdb;
+  }
+  .swiper-slide {
+    line-height: 50px;
+    font-size: 14px;
+    color: #222222;
+  }
+
+  .isactive {
+    color: #FF3E05;
+  }
+
+  #middleHeight {
+    margin-top: 8vh;
+  }
+
+  #footerHeight {
+    margin-bottom: 9vh;
+  }
+</style>

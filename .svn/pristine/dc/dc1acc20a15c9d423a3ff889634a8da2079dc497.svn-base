@@ -1,0 +1,516 @@
+<template>
+  <div id="app">
+
+    <router-view></router-view>
+
+    <img id="small_RC" src="./assets/images/poplayer_remote@3x.png" alt="" v-show="$store.state.isSmallRCshow" @touchmove.prevent="touchmove" @click="changeRCmark">
+
+    <div id="smallRC_UI" v-show="this.$store.state.isRCshow" @click="changeRCmark"></div>
+
+    <div class="UI_top" v-show="this.$store.state.isRCshow" >
+      <img class="up" :src="jiantouUp" alt="" @touchstart="changejiantou('up')" @touchend="changejiantou('up')" @click="sendMsg('KEY_UP');">
+      <img class="down" :src="jiantouDown" alt="" @touchstart="changejiantou('down')" @touchend="changejiantou('down')" @click="sendMsg('KEY_DOWN');">
+
+      <div :class="okCss" @touchstart="changeOK" @touchend="changeOK" @click="sendMsg('KEY_OK');">
+        OK
+      </div>
+
+      <img class="left" :src="jiantouLeft" alt="" @touchstart="changejiantou('left')" @touchend="changejiantou('left')" @click="sendMsg('KEY_LEFT');">
+      <img class="right" :src="jiantouRight" alt="" @touchstart="changejiantou('right')" @touchend="changejiantou('right')" @click="sendMsg('KEY_RIGHT');">
+    </div>
+
+    <div :class="yaokongCss" v-show="this.$store.state.isRCshow" @touchstart="changeyaokong" @touchend="changeyaokong" @click="goRC">
+      遥控器
+    </div>
+
+    <nav class="mui-bar mui-bar-tab" v-show="$store.state.isAppShow">
+      <template v-for="(item, index) in navList">
+        <router-link class="mui-tab-item" :to="item.path" @click.native="changeActive(index)">
+          <span :class="item.classN"></span>
+          <span class="mui-tab-label">{{item.name}}</span>
+        </router-link>
+      </template>
+    </nav>
+
+  </div>
+</template>
+
+<script>
+
+  import jiantou1 from '@/assets/images/remote_icon_1_n.png'
+  import jiantou2 from '@/assets/images/remote_icon_1_s.png'
+  import '@/assets/js/strophe'
+  import '@/assets/js/strophe.muc'
+  import '@/assets/js/strophe.register'
+  import { Toast } from 'mint-ui';
+
+  export default {
+    name: 'app',
+    data: function () {
+      return {
+        toast: null,
+        server: 'dp0.sz96296.com',
+        BOSH_SERVICE: 'ws://122.193.8.100:7076/websocket',
+        isActive: 0,
+        navList: [
+          {name: "推荐", classN: "mui-icon icon-chs_sywx_ic_home", path: "/Recommend"},
+          {name: "直播", classN: "mui-icon icon-chs_sywx_ic_living", path: "/live/Channel"},
+          {name: "点播", classN: "mui-icon icon-chs_sywx_ic_vod", path: "/VOD?id=9511"},
+          {name: "遥控器", classN: "mui-icon icon-chs_sywx_ic_rc", path: "/RC"},
+          {name: "我的", classN: "mui-icon icon-chs_sywx_ic_my", path: "/my"},
+        ],
+        moveX: 0,
+        moveY: 0,
+        startX: 0,
+        startY: 0,
+        endX: 0,
+        endY: 0,
+        allWidth: window.screen.availWidth,
+        jiantouUp: jiantou1,
+        jiantouDown: jiantou1,
+        jiantouLeft: jiantou1,
+        jiantouRight: jiantou1,
+        okCss: "ok",
+        yaokongCss: "UI_bottom",
+        isRCshow: false
+      }
+    },
+    methods: {
+      changeActive(index) {
+        this.$store.commit("appIndex", index);
+        if (index == 2) {
+          this.$store.commit("VODindex", 0);
+        }
+//        this.isActive = index;
+      },
+      touchmove(e) {
+        this.moveX = e.changedTouches[0].clientX - (this.allWidth * 0.15 / 2);
+        this.moveY = e.changedTouches[0].clientY - (this.allWidth * 0.15 / 2);
+        console.log();
+        if (this.moveX <= 0) {
+          this.moveX = 0;
+        }
+        if (this.moveX >= (document.body.clientWidth - e.target.offsetWidth)) {
+          this.moveX = document.body.clientWidth - e.target.offsetWidth;
+        }
+        if (this.moveY <= 0) {
+          this.moveY = 0;
+        }
+        if (this.moveY >= window.innerHeight - e.target.offsetHeight) {
+          this.moveY = window.innerHeight - e.target.offsetHeight;
+        }
+
+        var rc = e.target;
+        rc.style.left = this.moveX + "px";
+        rc.style.top = this.moveY + "px";
+      },
+      changejiantou(dir) {
+        if (dir == "up") {
+          this.jiantouUp = this.jiantouUp == jiantou1 ? jiantou2 : jiantou1;
+        }
+        else if (dir == "down") {
+          this.jiantouDown = this.jiantouDown == jiantou1 ? jiantou2 : jiantou1;
+        }
+        else if (dir == "left") {
+          this.jiantouLeft = this.jiantouLeft == jiantou1 ? jiantou2 : jiantou1;
+        }
+        else if (dir == "right") {
+          this.jiantouRight = this.jiantouRight == jiantou1 ? jiantou2 : jiantou1;
+        }
+      },
+      changeOK() {
+        this.okCss = this.okCss == "ok" ? "ok_word" : "ok";
+      },
+      changeyaokong() {
+        this.yaokongCss = this.yaokongCss == "UI_bottom" ? "UI_bottom2" : "UI_bottom";
+      },
+      changeRCmark() {
+        this.$store.commit("isRCshow", !this.$store.state.isRCshow);
+        this.$store.commit("isSmallRCshow", !this.$store.state.isSmallRCshow);
+      },
+      goRC() {
+
+        this.$store.commit("isRCshow", !this.$store.state.isRCshow);
+        this.$store.commit("isSmallRCshow", false);
+        if (this.$store.state.STBid == "") {
+          this.$store.commit("isSmallRCshow", true);
+          this.$router.push({path: "/STB_list"});
+          alert("请先绑定机顶盒！");
+          return
+        }
+        this.$router.push({path: "RC"});
+      },
+      xmpp() {
+        if (this.$store.state.openid == 0 || this.$store.state.openid == undefined || this.$store.state.openid == -1) {
+          return
+        }
+        if (this.$store.state.connection == null) {
+//          this.toast = Toast("连接中,给我几秒,请稍等...");
+          var that = this;
+          var url = this.BOSH_SERVICE;
+          this.$store.commit("connection", new Strophe.Connection(url));
+          var username = this.$store.state.openid;
+          var password = "123456";
+
+          var registerCallback = function (status) {
+            if (status === Strophe.Status.REGISTER) {
+              that.$store.state.connection.register.fields.username = username;
+              that.$store.state.connection.register.fields.password = password;
+              that.$store.state.connection.register.submit();
+            } else if (status === Strophe.Status.REGISTERED) {
+              that.$store.state.connection.authenticate();
+            } else if (status === Strophe.Status.CONNECTED) {
+              that.toast.close();
+              Toast({
+                message: '连接成功!',
+                duration: 1000
+              });
+            } else if (status === Strophe.Status.ERROR) {
+              that.toast.close();
+              Toast({
+                message: '连接发生错误!',
+                duration: 1000
+              });
+            } else if (status === Strophe.Status.CONNTIMEOUT) {
+              console.log(status);
+              that.toast.close();
+              Toast({
+                message: '连接超时!',
+                duration: 1000
+              });
+            } else if (status === Strophe.Status.DISCONNECTED) {
+
+            }
+          }
+          that.$store.state.connection.register.connect(this.server, registerCallback);
+        }
+      },
+      sendMsg(msg) {
+        if (this.$store.state.STBid == "") {
+          this.$store.commit("isSmallRCshow", true);
+          this.$store.commit("isRCshow", !this.$store.state.isRCshow);
+          this.$router.push({path: "STB_list"});
+          alert("请先绑定机顶盒！");
+          return
+        }
+
+
+        var to = this.$store.state.STBid + "@" + this.server;
+        var from = this.$store.state.openid + "@" + this.server;
+        var con = "";
+
+        if (msg == "KEY_QUIT") {
+          con = '<Keyboard><InstanceID>0</InstanceID><Unit>KEYBOARD_CODE</Unit><Target>-16777202</Target></Keyboard>';
+        }
+        else if (msg == "KEY_MENU") {
+          con = '<Keyboard><InstanceID>0</InstanceID><Unit>KEYBOARD_CODE</Unit><Target>-16777203</Target></Keyboard>';
+        }
+        else if (msg == "KEY_VOLUME_DOWN") {
+          con = '<Keyboard><InstanceID>0</InstanceID><Unit>KEYBOARD_CODE</Unit><Target>-16777188</Target></Keyboard>';
+        }
+        else if (msg == "KEY_VOLUME_UP") {
+          con = '<Keyboard><InstanceID>0</InstanceID><Unit>KEYBOARD_CODE</Unit><Target>-16777189</Target></Keyboard>';
+        }
+        else if (msg == "KEY_UP") {
+          con = '<Keyboard><InstanceID>0</InstanceID><Unit>KEYBOARD_CODE</Unit><Target>-16777197</Target></Keyboard>';
+        }
+        else if (msg == "KEY_DOWN") {
+          con = '<Keyboard><InstanceID>0</InstanceID><Unit>KEYBOARD_CODE</Unit><Target>-16777196</Target></Keyboard>';
+        }
+        else if (msg == "KEY_LEFT") {
+          con = '<Keyboard><InstanceID>0</InstanceID><Unit>KEYBOARD_CODE</Unit><Target>-16777198</Target></Keyboard>';
+        }
+        else if (msg == "KEY_RIGHT") {
+          con = '<Keyboard><InstanceID>0</InstanceID><Unit>KEYBOARD_CODE</Unit><Target>-16777195</Target></Keyboard>';
+        }
+        else if (msg == "KEY_OK") {
+          con = '<Keyboard><InstanceID>0</InstanceID><Unit>KEYBOARD_CODE</Unit><Target>-16777199</Target></Keyboard>';
+        }
+        else if (msg == "KEY_POWER") {
+          con = '<Keyboard><InstanceID>0</InstanceID><Unit>KEYBOARD_CODE</Unit><Target>-16777215</Target></Keyboard>';
+        }
+        else if (msg == "KEY_BACK") {
+          con = '<Keyboard><InstanceID>0</InstanceID><Unit>KEYBOARD_CODE</Unit><Target>-16777201</Target></Keyboard>';
+        }
+        else if (msg == "0") {
+          con = '<Keyboard><InstanceID>0</InstanceID><Unit>KEYBOARD_CODE</Unit><Target>-16777204</Target></Keyboard>';
+        }
+        else if (msg == "1") {
+          con = '<Keyboard><InstanceID>0</InstanceID><Unit>KEYBOARD_CODE</Unit><Target>-16777213</Target></Keyboard>';
+        }
+        else if (msg == "2") {
+          con = '<Keyboard><InstanceID>0</InstanceID><Unit>KEYBOARD_CODE</Unit><Target>-16777212</Target></Keyboard>';
+        }
+        else if (msg == "3") {
+          con = '<Keyboard><InstanceID>0</InstanceID><Unit>KEYBOARD_CODE</Unit><Target>-16777211</Target></Keyboard>';
+        }
+        else if (msg == "4") {
+          con = '<Keyboard><InstanceID>0</InstanceID><Unit>KEYBOARD_CODE</Unit><Target>-16777210</Target></Keyboard>';
+        }
+        else if (msg == "5") {
+          con = '<Keyboard><InstanceID>0</InstanceID><Unit>KEYBOARD_CODE</Unit><Target>-16777209</Target></Keyboard>';
+        }
+        else if (msg == "6") {
+          con = '<Keyboard><InstanceID>0</InstanceID><Unit>KEYBOARD_CODE</Unit><Target>-16777208</Target></Keyboard>';
+        }
+        else if (msg == "7") {
+          con = '<Keyboard><InstanceID>0</InstanceID><Unit>KEYBOARD_CODE</Unit><Target>-16777207</Target></Keyboard>';
+        }
+        else if (msg == "8") {
+          con = '<Keyboard><InstanceID>0</InstanceID><Unit>KEYBOARD_CODE</Unit><Target>-16777206</Target></Keyboard>';
+        }
+        else if (msg == "9") {
+          con = '<Keyboard><InstanceID>0</InstanceID><Unit>KEYBOARD_CODE</Unit><Target>-16777205</Target></Keyboard>';
+        }
+
+        var m = $msg({
+          to: to, //发送过去的地址(机顶盒号id+域名)
+          from: from, //本地地址
+          type: 'chat'
+        }).c("body").t(con);
+
+        this.$store.state.connection.send(m);
+
+      }
+    },
+    filters: {
+      isActive(v1, v2, v3){
+        return v2 == v3 ? v1 + "_s" : v1;
+      },
+      isrouterlink(v1, v2, v3){
+        return v2 == v3 ? v1 + " mui-active" : v1;
+      }
+    },
+    created(){
+      this.xmpp();
+    },
+    mounted() {
+    },
+    updated() {
+      if (this.$store.state.connection!=null && this.$store.state.openid!="" && !this.$store.state.connection.connected) {
+        setTimeout(function () {
+          this.$store.state.connection.connect(this.$store.state.openid, "123456");
+        },5000)
+      }
+    }
+  }
+
+
+</script>
+
+<style>
+
+  #small_RC {
+    width: 15%;
+    position: fixed;
+    top: 75%;
+    left: 5%;
+    z-index: 999;
+    opacity: 1;
+  }
+
+  #smallRC_UI {
+    width: 100%;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0);
+    position: fixed;
+    top: 0;
+    z-index: 999;
+  }
+
+  .UI_top {
+    width: 90%;
+    height: 60vh;
+    background: rgba(0, 0, 0, .8);
+    position: fixed;
+    z-index: 9999;
+    top: 13%;
+    left: 50%;
+    transform: translateX(-50%);
+    border-radius: 3vw;
+  }
+  .UI_top img {
+    width: 10vw;
+  }
+  .UI_top .up {
+    position: absolute;
+    top: 10vw;
+    left: 50%;
+    transform: translateX(-5vw) rotate(90deg);
+  }
+  .UI_top .down {
+    position: absolute;
+    bottom: 10vw;
+    left: 50%;
+    transform: translateX(-5vw) rotate(-90deg);
+  }
+  .UI_top .ok {
+    width: 30vw;
+    height: 30vw;
+    border: 1vw solid #04b456;
+    border-radius: 30vw;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translateX(-16vw) translateY(-16vw);
+    font-size: 10vw;
+    color: white;
+    text-align: center;
+    line-height: 30vw;
+  }
+  .ok_word {
+    width: 30vw;
+    height: 30vw;
+    border: 1vw solid #04b456;
+    border-radius: 30vw;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translateX(-16vw) translateY(-16vw);
+    font-size: 10vw;
+    color: #04b456;
+    text-align: center;
+    line-height: 30vw;
+  }
+  .UI_top .left {
+    position: absolute;
+    top: 50%;
+    left: 10vw;
+    transform: translateY(-5vw);
+  }
+  .UI_top .right {
+    position: absolute;
+    top: 50%;
+    right: 10vw;
+    transform: translateY(-5vw) rotate(180deg);
+  }
+
+  .UI_bottom {
+    width: 90%;
+    height: 10vh;
+    background: rgba(0, 0, 0, .8);
+    position: fixed;
+    bottom: 13%;
+    left: 50%;
+    transform: translateX(-50%);
+    border-radius: 3vw;
+    color: white;
+    font-size: 6vw;
+    text-align: center;
+    line-height: 10vh;
+    z-index: 9999;
+  }
+  .UI_bottom2 {
+    width: 90%;
+    height: 10vh;
+    background: rgba(0, 0, 0, .8);
+    position: fixed;
+    bottom: 13%;
+    left: 50%;
+    transform: translateX(-50%);
+    border-radius: 3vw;
+    color: #04b456;
+    font-size: 6vw;
+    text-align: center;
+    line-height: 10vh;
+    z-index: 9999;
+  }
+
+  /* css reset */
+  body, h1, h2, h3, ul, ol, li, figure, figcaption {
+    margin: 0;
+    padding: 0;
+  }
+
+  h1, h2, h3 {
+    font-weight: normal;
+  }
+
+  ul, ol {
+    list-style: outside none none;
+  }
+
+  a {
+    text-decoration: none;
+  }
+
+  /*区块,图片响应式*/
+  img {
+    display: block;
+    max-width: 100%;
+  }
+
+  #app {
+    width: 100%;
+    background-color: #EDEDED;
+  }
+
+  .mui-bar-tab {
+    bottom: 0;
+    display: table;
+    width: 100%;
+    height: 8vh;
+    padding: 0;
+    table-layout: fixed;
+    border-top: 0;
+    border-bottom: 0;
+    -webkit-touch-callout: none;
+  }
+  .mui-bar {
+    position: fixed;
+    z-index: 10;
+    right: 0;
+    left: 0;
+    height: 8vh;
+    /*padding-right: 10px;*/
+    /*padding-left: 10px;*/
+    border-bottom: 0;
+    background-color: #f7f7f7;
+    -webkit-box-shadow: 0 0 1px rgba(0,0,0,.85);
+    box-shadow: 0 0 1px rgba(0,0,0,.85);
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+  }
+
+  .mui-bar-tab .mui-tab-item {
+    display: table-cell;
+    overflow: hidden;
+    width: 1%;
+    height: 8vh;
+    text-align: center;
+    vertical-align: middle;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    color: #929292;
+  }
+  .mui-bar-tab .mui-tab-item .mui-icon {
+    top: 3px;
+    width: 24px;
+    height: 24px;
+    padding-top: 0;
+    padding-bottom: 0;
+  }
+
+  .mui-bar .mui-icon {
+    font-size: 5vh;
+    position: relative;
+    z-index: 20;
+    padding-top: 10px;
+    padding-bottom: 10px;
+  }
+
+  .mui-bar-tab .mui-tab-item.mui-active {
+    color: #FF3E05 !important;
+  }
+
+  .mui-bar-tab .mui-tab-item .mui-icon~.mui-tab-label {
+    font-size: 11px;
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .mui-tab-label {
+    font-size: 2.5vh !important;
+  }
+</style>

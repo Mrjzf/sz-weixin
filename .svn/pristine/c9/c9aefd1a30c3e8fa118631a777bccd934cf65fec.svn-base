@@ -1,0 +1,61 @@
+import Vue from 'vue'
+import Vuex from 'vuex'
+
+Vue.use(Vuex)
+
+const store = new Vuex.Store({
+  state: {
+    // isappIndex: false,
+    appIndex: 0,
+    commentList: [],
+    historySearch: [],
+    key2: "",
+    isFirst: true,
+    videoAddress: "",
+    openid: 0,
+    nickName: "",
+    headImg: "",
+    VOD_index: 0,          //VOD页面的index记录
+    Channel_index: 0,      //Channel页面的index记录
+    Channel_category: "",
+    areaID: "2",   //2是苏州市区,
+    userID: 0,   //绑定机顶盒的id,
+    isHaveSTB: false,   //是否绑定了机顶盒
+  },
+  mutations: {
+    // isappIndex(_s, _v) {
+    //   _s.isappIndex = _v;
+    // },
+    appIndex(_s, _v) {
+      _s.appIndex = _v;
+    },
+    videoAddress(_s, _v){
+      _s.videoAddress = _v;
+    },
+    openid(_s, _v){
+      _s.openid = _v;
+    },
+    nickName(_s, _v){
+      _s.nickName = _v;
+    },
+    headImg(_s, _v){
+      _s.headImg = _v;
+    },
+    VODindex(_s, _v) {
+      _s.VOD_index = _v;
+    },
+    Channelindex(_s, _v) {
+      _s.Channel_index = _v;
+    },
+    Channelcategory(_s, _v) {
+      _s.Channel_category = _v;
+    },
+    userID(_s, _v) {
+      _s.userID = _v;
+    },
+    isHaveSTB(_s, _v) {
+      _s.isHaveSTB = _v;
+    }
+  }
+})
+export default store;

@@ -1,0 +1,684 @@
+<template>
+  <div id="app">
+
+    <router-view @send="sendMsg"></router-view>
+
+    <img id="small_RC" src="./assets/images/poplayer_remote@3x.png" alt="" v-show="$store.state.isSmallRCshow"
+         @touchmove.prevent="touchmove" @click="changeRCmark">
+
+    <div id="smallRC_UI" v-show="this.$store.state.isRCshow" @click="changeRCmark"></div>
+
+    <div class="UI_top" v-show="this.$store.state.isRCshow">
+      <img class="up" :src="jiantouUp" alt="" @touchstart="changejiantou('up')" @touchend="changejiantou('up')"
+           @click="sendMsg('KEY_UP');">
+      <img class="down" :src="jiantouDown" alt="" @touchstart="changejiantou('down')" @touchend="changejiantou('down')"
+           @click="sendMsg('KEY_DOWN');">
+
+      <div :class="okCss" @touchstart="changeOK" @touchend="changeOK" @click="sendMsg('KEY_OK');">
+        OK
+      </div>
+
+      <img class="left" :src="jiantouLeft" alt="" @touchstart="changejiantou('left')" @touchend="changejiantou('left')"
+           @click="sendMsg('KEY_LEFT');">
+      <img class="right" :src="jiantouRight" alt="" @touchstart="changejiantou('right')"
+           @touchend="changejiantou('right')" @click="sendMsg('KEY_RIGHT');">
+    </div>
+
+    <div :class="yaokongCss" v-show="this.$store.state.isRCshow" @touchstart="changeyaokong" @touchend="changeyaokong"
+         @click="goRC">
+      遥控器
+    </div>
+
+    <div id="download" v-show="downloadTips">
+      <div id="download_tips">
+        <div class="msg">
+          在苏州云媒体APP中登录观看!
+        </div>
+        <span class="lineX"></span>
+        <span class="lineY"></span>
+        <p id="yes" @click="goDownLoad();">打开</p>
+        <p id="no" @click="no();">取消</p>
+      </div>
+    </div>
+
+    <nav class="mui-bar mui-bar-tab" v-show="$store.state.isAppShow">
+      <template v-for="(item, index) in navList">
+        <router-link class="mui-tab-item" :to="item.path" @click.native="changeActive(index)">
+          <span :class="item.classN"></span>
+          <span class="mui-tab-label">{{item.name}}</span>
+        </router-link>
+      </template>
+    </nav>
+
+  </div>
+</template>
+
+<script>
+
+  import jiantou1 from '@/assets/images/remote_icon_1_n.png'
+  import jiantou2 from '@/assets/images/remote_icon_1_s.png'
+  import '@/assets/js/strophe'
+  import '@/assets/js/strophe.muc'
+  import '@/assets/js/strophe.register'
+  import {Toast} from 'mint-ui';
+
+  export default {
+    name: 'app',
+    data: function () {
+      return {
+        toast: null,
+        server: 'dp0.sz96296.com',
+        BOSH_SERVICE: 'ws://122.193.8.100:7076/websocket',
+        isActive: 0,
+        navList: [
+          {name: "推荐", classN: "mui-icon icon-chs_sywx_ic_home", path: "/Recommend"},
+          {name: "直播", classN: "mui-icon icon-chs_sywx_ic_living", path: "/live/Channel"},
+          {name: "点播", classN: "mui-icon icon-chs_sywx_ic_vod", path: "/VOD?id=9511"},
+          {name: "遥控器", classN: "mui-icon icon-chs_sywx_ic_rc", path: "/RC"},
+          {name: "我的", classN: "mui-icon icon-chs_sywx_ic_my", path: "/my"},
+        ],
+        moveX: 0,
+        moveY: 0,
+        startX: 0,
+        startY: 0,
+        endX: 0,
+        endY: 0,
+        allWidth: window.screen.availWidth,
+        jiantouUp: jiantou1,
+        jiantouDown: jiantou1,
+        jiantouLeft: jiantou1,
+        jiantouRight: jiantou1,
+        okCss: "ok",
+        yaokongCss: "UI_bottom",
+        keyMap: {
+          "1": "-16777213",
+          "KEY_STOP": "-16777193",
+          "KEY_GUIDE": "-16777192",
+          "KEY_PAGEUP": "-16777191",
+          "KEY_PAGEDOWN": "-16777190",
+          "KEY_VOLUME_UP": "-16777189",
+          "KEY_POWER": "-16777215",
+          "2": "-16777212",
+          "3": "-16777211",
+          "4": "-16777210",
+          "5": "-16777209",
+          "6": "-16777208",
+          "7": "-16777207",
+          "8": "-16777206",
+          "9": "-16777205",
+          "0": "-16777204",
+          "KEY_MENU": "-16777203",
+          "KEY_QUIT": "-16777202",
+          "KEY_BACK": "-16777201",
+          "KEY_FAVORITE": "-16777200",
+          "KEY_OK": "-16777199",
+          "KEY_LEFT": "-16777198",
+          "KEY_UP": "-16777197",
+          "KEY_DOWN": "-16777196",
+          "KEY_RIGHT": "-16777195",
+          "KEY_PLAY": "-16777194",
+          "KEY_VOLUME_DOWN": "-167771",
+          "KEY_CHANNEL_UP": "-1677718",
+          "KEY_CHANNEL_DOWN": "-167776",
+          "KEY_TV": "-16777185",
+          "KEY_RADIO": "-16777184",
+          "KEY_VOD": "-16777183",
+          "KEY_INFORMATION": "-167771",
+          "KEY_TIP": "-16777181",
+          "KEY_TAB": "-16777180",
+          "KEY_RED": "-16777179",
+          "KEY_BLUE": "-16777178",
+          "KEY_GREEN": "-16777177",
+          "KEY_YELLOW": "-16777176",
+          "KEY_RECALL": "-16777175",
+          "KEY_DASSD": "-16777174",
+          "KEY_DASSV": "-16777173",
+          "KEY_DASSN": "-16777172",
+          "KEY_FORWARD": "-16777171",
+          "KEY_BACKWARD": "-16777170",
+          "KEY_TRACK": "-16777169",
+          "KEY_MAIL": "-16777168"
+        },
+        isRCshow: false,
+        connection: null,
+        downloadTips: false
+      }
+    },
+    methods: {
+      changeActive(index) {
+        this.$store.commit("appIndex", index);
+        if (index == 2) {
+          this.$store.commit("VODindex", 0);
+        }
+//        this.isActive = index;
+      },
+      touchmove(e) {
+        this.moveX = e.changedTouches[0].clientX - (this.allWidth * 0.15 / 2);
+        this.moveY = e.changedTouches[0].clientY - (this.allWidth * 0.15 / 2);
+        console.log();
+        if (this.moveX <= 0) {
+          this.moveX = 0;
+        }
+        if (this.moveX >= (document.body.clientWidth - e.target.offsetWidth)) {
+          this.moveX = document.body.clientWidth - e.target.offsetWidth;
+        }
+        if (this.moveY <= 0) {
+          this.moveY = 0;
+        }
+        if (this.moveY >= window.innerHeight - e.target.offsetHeight) {
+          this.moveY = window.innerHeight - e.target.offsetHeight;
+        }
+
+        var rc = e.target;
+        rc.style.left = this.moveX + "px";
+        rc.style.top = this.moveY + "px";
+      },
+      changejiantou(dir) {
+        if (dir == "up") {
+          this.jiantouUp = this.jiantouUp == jiantou1 ? jiantou2 : jiantou1;
+        }
+        else if (dir == "down") {
+          this.jiantouDown = this.jiantouDown == jiantou1 ? jiantou2 : jiantou1;
+        }
+        else if (dir == "left") {
+          this.jiantouLeft = this.jiantouLeft == jiantou1 ? jiantou2 : jiantou1;
+        }
+        else if (dir == "right") {
+          this.jiantouRight = this.jiantouRight == jiantou1 ? jiantou2 : jiantou1;
+        }
+      },
+      changeOK() {
+        this.okCss = this.okCss == "ok" ? "ok_word" : "ok";
+      },
+      changeyaokong() {
+        this.yaokongCss = this.yaokongCss == "UI_bottom" ? "UI_bottom2" : "UI_bottom";
+      },
+      changeRCmark() {
+        this.$store.commit("isRCshow", !this.$store.state.isRCshow);
+        this.$store.commit("isSmallRCshow", !this.$store.state.isSmallRCshow);
+      },
+      goRC() {
+        if (this.$store.state.openid == 0 || this.$store.state.openid == undefined || this.$store.state.openid == -1) {
+          this.sendMsg("other");
+        } else {
+          this.$store.commit("isRCshow", !this.$store.state.isRCshow);
+          this.$store.commit("isSmallRCshow", false);
+          if (this.$store.state.STBid == "") {
+            this.$store.commit("isSmallRCshow", true);
+            this.$router.push({path: "/STB_list"});
+            alert("请先绑定机顶盒！");
+            return
+          }
+          this.$router.push({path: "/RC"});
+        }
+      },
+      count(_p, _plist) {
+        var p = _p.substr(0, 4) + "-" + _p.substr(4, 2) + "-" + _p.substr(6, _p.length);
+
+        var _now = new Date();
+        var _pt = new Date(p);
+        var page = _pt.getHours() == 0 ? 1 : Math.ceil(_pt.getHours() / 3);
+
+        if (_pt.getHours() != 0 && _pt.getHours() % 3 == 0) {
+          page += 1;
+        }
+
+        var _sh = (page - 1) * 3;
+
+        var y = _now.getDate() - _pt.getDate();
+        var x = -1;
+        for (var _i = _plist.length - 1; _i >= 0; _i--) {
+          var _t = _plist[_i].startTime.substr(9, _plist[_i].startTime.length).split(":");
+          var _h = Number(_t[0]);
+          var _m = Number(_t[1]);
+          var _s = Number(_t[2]);
+          if (_h >= _sh) {
+            x++;
+          }
+          if (_pt.getHours() == _h && _pt.getMinutes() == _m && _pt.getSeconds() == _s) {
+            break;
+          }
+        }
+
+        if (page != 1 && (_pt.getHours() % 3 != 0 || _pt.getMinutes() != 0 || _pt.getSeconds() != 0)) {
+          x++;
+        }
+
+        return {'x': x, 'y': y, 'page': page}
+      },
+      xmpp(cb) {
+        this.toast = Toast({
+          message: '连接中,请稍等...',
+          position: 'middle',
+          duration: -1
+        });
+        var url = this.BOSH_SERVICE;
+        this.connection = new Strophe.Connection(url);
+        var username = this.$store.state.openid;
+        var password = "123456";
+
+        this.connection.register.connect(this.server, (status) => {
+
+          if (status === Strophe.Status.REGISTER) {
+            this.connection.register.fields.username = username;
+            this.connection.register.fields.password = password;
+            this.connection.register.submit();
+          } else if (status === Strophe.Status.REGISTERED) {
+            this.connection.authenticate();
+          } else if (status === Strophe.Status.CONNECTED) {
+            this.toast.close();
+            Toast({
+              message: '连接成功!',
+              duration: 1000
+            });
+            if (cb) {
+              cb();
+            }
+          } else if (status === Strophe.Status.ERROR || status === Strophe.Status.CONNTIMEOUT) {
+            this.toast.close();
+            Toast({
+              message: '连接发生错误!',
+              duration: 1000
+            });
+          }
+        });
+
+      },
+      sendMsg(msg, o) {
+
+        if (this.$store.state.openid == 0 || this.$store.state.openid == undefined || this.$store.state.openid == -1) {
+//          alert("请先登录！");
+          if (msg == "other") {
+            this.$store.commit("isSmallRCshow", true);
+            this.$store.commit("isRCshow", false);
+          } else {
+            if (this.$store.state.isSmallRCshow == false) {
+              this.$store.commit("isSmallRCshow", !this.$store.state.isSmallRCshow);
+            }
+            this.$store.commit("isRCshow", false);
+          }
+
+          this.downloadTips = true;
+          return
+        }
+
+        if (this.$store.state.STBid == "") {
+          this.$router.push({path: "/STB_list"});
+          alert("请先绑定机顶盒！");
+          return
+        }
+
+        if (this.connection == null || !this.connection.connected) {
+          this.xmpp(() => {
+            this.send(msg, o);
+          })
+        } else {
+          this.send(msg, o);
+        }
+
+        if (msg == "review" || msg == "package" || msg == "movie") {
+          this.$store.commit("isSmallRCshow", !this.$store.state.isSmallRCshow);
+          this.$store.commit("isRCshow", !this.$store.state.isRCshow);
+        }
+
+      },
+      send(msg, o){
+        var to = this.$store.state.STBid + "@" + this.server;
+        var from = this.$store.state.openid + "@" + this.server;
+        var con = "";
+
+        switch (msg) {
+          case "live":
+          case "review":
+            con = o;
+            break;
+          case "package":
+          case "movie":
+            con = '<SetAVTransportURI><InstanceID>0</InstanceID><CurrentURI>http://172.18.224.25/vpg/forsearchindex.do?appid=mobile&hd=y&movieassetid=' + o.ID + '</CurrentURI><CurrentURIMetaData>mediaType=4&Freq=0&Symb=0&Mod=0&ServiceID=0&RangeStart=0&RangeEnd=0&Volume=30&PlayOffset=48</CurrentURIMetaData></SetAVTransportURI>'
+            break;
+          case "message":
+            con = "<InputMethod><InstanceID>0</InstanceID><Unit>InputText</Unit><Target>" + o + "</Target></InputMethod>";
+            break;
+          default:
+            con = "<Keyboard><InstanceID>0</InstanceID><Unit>KEYBOARD_CODE</Unit><Target>" + this.keyMap[msg] + "</Target></Keyboard>"
+            break;
+        }
+
+        var m = $msg({
+          to: to, //发送过去的地址(机顶盒号id+域名)
+          from: from, //本地地址
+          type: 'chat'
+        }).c("body").t(con);
+
+        this.connection.send(m);
+      },
+      goDownLoad() {
+        window.location.href = "http://dp2.sz96296.com:8091/download/index.html";
+      },
+      no() {
+        this.downloadTips = false;
+      }
+    },
+    filters: {
+      isActive(v1, v2, v3){
+        return v2 == v3 ? v1 + "_s" : v1;
+      },
+      isrouterlink(v1, v2, v3){
+        return v2 == v3 ? v1 + " mui-active" : v1;
+      }
+    },
+    created(){
+      var _vue = this;
+      document.addEventListener("visibilitychange", function () {
+        if (document.visibilityState == 'visible' && _vue.connection != null && !_vue.connection.connected) {
+          _vue.xmpp();
+        }
+      });
+    },
+    mounted() {
+//      this.xmpp();
+    },
+    updated(){
+
+    }
+  }
+
+
+</script>
+
+<style>
+
+  #small_RC {
+    width: 15%;
+    position: fixed;
+    top: 75%;
+    left: 5%;
+    z-index: 999;
+    opacity: 1;
+  }
+
+  #smallRC_UI {
+    width: 100%;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0);
+    position: fixed;
+    top: 0;
+    z-index: 999;
+  }
+
+  .UI_top {
+    width: 90%;
+    height: 60vh;
+    background: rgba(0, 0, 0, .8);
+    position: fixed;
+    z-index: 9999;
+    top: 13%;
+    left: 50%;
+    transform: translateX(-50%);
+    border-radius: 3vw;
+  }
+
+  .UI_top img {
+    width: 10vw;
+  }
+
+  .UI_top .up {
+    position: absolute;
+    top: 10vw;
+    left: 50%;
+    transform: translateX(-5vw) rotate(90deg);
+  }
+
+  .UI_top .down {
+    position: absolute;
+    bottom: 10vw;
+    left: 50%;
+    transform: translateX(-5vw) rotate(-90deg);
+  }
+
+  .UI_top .ok {
+    width: 30vw;
+    height: 30vw;
+    border: 1vw solid #04b456;
+    border-radius: 30vw;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translateX(-16vw) translateY(-16vw);
+    font-size: 10vw;
+    color: white;
+    text-align: center;
+    line-height: 30vw;
+  }
+
+  .ok_word {
+    width: 30vw;
+    height: 30vw;
+    border: 1vw solid #04b456;
+    border-radius: 30vw;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translateX(-16vw) translateY(-16vw);
+    font-size: 10vw;
+    color: #04b456;
+    text-align: center;
+    line-height: 30vw;
+  }
+
+  .UI_top .left {
+    position: absolute;
+    top: 50%;
+    left: 10vw;
+    transform: translateY(-5vw);
+  }
+
+  .UI_top .right {
+    position: absolute;
+    top: 50%;
+    right: 10vw;
+    transform: translateY(-5vw) rotate(180deg);
+  }
+
+  .UI_bottom {
+    width: 90%;
+    height: 10vh;
+    background: rgba(0, 0, 0, .8);
+    position: fixed;
+    bottom: 13%;
+    left: 50%;
+    transform: translateX(-50%);
+    border-radius: 3vw;
+    color: white;
+    font-size: 6vw;
+    text-align: center;
+    line-height: 10vh;
+    z-index: 9999;
+  }
+
+  .UI_bottom2 {
+    width: 90%;
+    height: 10vh;
+    background: rgba(0, 0, 0, .8);
+    position: fixed;
+    bottom: 13%;
+    left: 50%;
+    transform: translateX(-50%);
+    border-radius: 3vw;
+    color: #04b456;
+    font-size: 6vw;
+    text-align: center;
+    line-height: 10vh;
+    z-index: 9999;
+  }
+
+  #download {
+    width: 100%;
+    height: 100vh;
+    position: fixed;
+    top: 0;
+    background: rgba(0, 0, 0, 0.3);
+    z-index: 1000;
+  }
+
+  #download_tips {
+    width: 70vw;
+    height: 45vw;
+    background-color: #fff;
+    position: fixed;
+    z-index: 9999;
+    top: 50%;
+    left: 50%;
+    transform: translateX(-35vw) translateY(-25vw);
+  }
+
+  #download_tips .msg {
+    width: 100%;
+    height: 32vw;
+    text-align: center;
+    line-height: 32vw;
+    font-size: 16px;
+  }
+
+  #download_tips .lineX {
+    display: block;
+    width: 100%;
+    height: 1px;
+    background-color: #c3c3c3;
+    position: absolute;
+    bottom: 13vw;
+  }
+
+  #download_tips .lineY {
+    display: block;
+    width: 13vw;
+    height: 1px;
+    background-color: #c3c3c3;
+    position: absolute;
+    bottom: 6.5vw;
+    left: 28.5vw;
+    transform: rotate(90deg);
+  }
+
+  #download_tips p {
+    float: left;
+    width: 35vw;
+    height: 13vw;
+    text-align: center;
+    line-height: 13vw;
+    position: absolute;
+    margin: 0;
+    padding: 0;
+  }
+
+  #yes {
+    bottom: 0;
+    color: #2da7ff;
+  }
+
+  #no {
+    bottom: 0;
+    right: 0;
+    color: red;
+  }
+
+  /* css reset */
+  body, h1, h2, h3, ul, ol, li, figure, figcaption {
+    margin: 0;
+    padding: 0;
+  }
+
+  h1, h2, h3 {
+    font-weight: normal;
+  }
+
+  ul, ol {
+    list-style: outside none none;
+  }
+
+  a {
+    text-decoration: none;
+  }
+
+  /*区块,图片响应式*/
+  img {
+    display: block;
+    max-width: 100%;
+  }
+
+  #app {
+    width: 100%;
+    background-color: #EDEDED;
+  }
+
+  .mui-bar-tab {
+    bottom: 0;
+    display: table;
+    width: 100%;
+    height: 8vh;
+    padding: 0;
+    table-layout: fixed;
+    border-top: 0;
+    border-bottom: 0;
+    -webkit-touch-callout: none;
+  }
+
+  .mui-bar {
+    position: fixed;
+    z-index: 10;
+    right: 0;
+    left: 0;
+    height: 8vh;
+    /*padding-right: 10px;*/
+    /*padding-left: 10px;*/
+    border-bottom: 0;
+    background-color: #f7f7f7;
+    -webkit-box-shadow: 0 0 1px rgba(0, 0, 0, .85);
+    box-shadow: 0 0 1px rgba(0, 0, 0, .85);
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+  }
+
+  .mui-bar-tab .mui-tab-item {
+    display: table-cell;
+    overflow: hidden;
+    width: 1%;
+    height: 8vh;
+    text-align: center;
+    vertical-align: middle;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    color: #929292;
+  }
+
+  .mui-bar-tab .mui-tab-item .mui-icon {
+    top: 3px;
+    width: 24px;
+    height: 24px;
+    padding-top: 0;
+    padding-bottom: 0;
+  }
+
+  .mui-bar .mui-icon {
+    font-size: 5vh;
+    position: relative;
+    z-index: 20;
+    padding-top: 10px;
+    padding-bottom: 10px;
+  }
+
+  .mui-bar-tab .mui-tab-item.mui-active {
+    color: #FF3E05 !important;
+  }
+
+  .mui-bar-tab .mui-tab-item .mui-icon ~ .mui-tab-label {
+    font-size: 11px;
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .mui-tab-label {
+    font-size: 2.5vh !important;
+  }
+</style>

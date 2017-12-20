@@ -1,0 +1,175 @@
+<template>
+  <div class="templ">
+
+    <LiveHead :tolivehead="tolivehead"></LiveHead>
+    <!--<div class="clearfixed"></div>-->
+
+    <!--<router-view></router-view>-->
+    <section @touchend ="toNext" @touchstart="judge">
+      <aside>
+
+        <!-- 这里将index作为参数传到changeActive里去 -->
+        <ul>
+          <li v-for="(item,index) in day" :class="{active:isActive==index}"
+              @click="changeActive(index)">{{item}}
+            <div class="dash" v-show="isActive==index"></div>
+          </li>
+        </ul>
+      </aside>
+      <div id="content">
+        <ul>
+          <li v-for="item in showlist">
+            <h1>
+              {{item.show}}
+              <button class="state">{{item.state}}</button>
+            </h1>
+
+          </li>
+        </ul>
+      </div>
+
+    </section>
+
+  </div>
+</template>
+
+<script>
+
+import LiveHead from './LiveHead.vue'
+
+
+export default {
+  data: function() {
+    return {
+      day:['今天','4月21日','4月20日','4月19日','4月18日','4月17日','4月17日','4月17日','4月17日','4月17日','4月17日'],
+      showlist:[
+        {show:"中国梦创作歌曲",state:"直播中"},
+        {show:"中国梦创作歌曲",state:"直播中"},
+        {show:"中国梦创作歌曲",state:"直播中"},
+        {show:"中国梦创作歌曲",state:"直播中"},
+        {show:"中国梦创作歌曲",state:"直播中"},
+        {show:"中国梦创作歌曲",state:"直播中"},
+        {show:"中国梦创作歌曲",state:"直播中"},
+        {show:"中国梦创作歌曲",state:"直播中"}
+      ],
+      tolivehead:2,
+      isActive:0,
+      startX:0,
+      endX:0,
+      changeX:0,
+      startY:0,
+      endY:0,
+      changeY:0
+    }
+  },
+  components:{
+    LiveHead
+  },
+  methods:{
+    changeActive:function (index) {
+      this.isActive=index;
+    },
+
+    //在点击屏幕开始收集坐标数据
+    judge:function (e) {
+      this.startX=e.changedTouches[0].clientX;
+      this.startY=e.changedTouches[0].clientY;
+    },
+    //判断滑动方向,模仿点击事件
+    toNext:function (e) {
+      this.endX=e.changedTouches[0].clientX;
+      this.endY=e.changedTouches[0].clientY;
+      this.changeX=this.startX-this.endX;
+      this.changeY=this.startY-this.endY;
+      if((Math.abs(this.changeX)>25)&&this.changeX>0&&
+        (Math.abs(this.changeX)>Math.abs(this.changeY))){
+        document.getElementById('comment').click();
+      }else if((Math.abs(this.changeX)>25)&&this.changeX<0&&
+        Math.abs(this.changeX)>Math.abs(this.changeY)){
+        document.getElementById('channel').click();
+      }
+    }
+  }
+};
+
+</script>
+
+<style scoped>
+.clearfixed{
+  height:255px;
+}
+section{
+  background-color: #fff;
+  margin-top: 75vw;
+}
+/*左边导航  */
+aside{
+  border-right:2px solid #eee;
+  width:25%;
+  float: left;
+}
+.clear{
+  clear: both;
+}
+aside ul li{
+  position: relative;
+  height:49px;
+  text-align:center;
+  line-height:49px;
+  font-size:14px;
+  font-family: "Microsoft YaHei";
+  border-bottom: 1px solid #eee;
+}
+.dash{
+  width:2px;
+  background-color: #FF3E05;
+  height:25px;
+  position: absolute;
+  top:11px;
+  right:-2px;
+}
+.active{
+  font-size:15px;
+  color:#FF3E05;
+}
+
+
+/*右边的content*/
+#content{
+  width:74%;
+  float: right;
+}
+#content ul li{
+  height: 49px;
+  border-bottom: 1px solid #eee;
+}
+
+h1{
+  margin:18px 0 17px 16px;
+  padding-left: 20px;
+  font-size:15px;
+  font-family: "Microsoft Yahei";
+  color:#04B456;
+}
+.state{
+  text-align: center;
+  width:57px;
+  height:25px;
+  font-size:12px;
+  color:#04B456;
+  float: right;
+  border:2px solid #04B456;
+  border-radius:25px;
+  margin:0 15px 0 0;
+  line-height:23px;
+  background-color: #fff;
+}
+
+section {
+  overflow: hidden;
+  margin-bottom: 50px;
+}
+
+
+</style>
+

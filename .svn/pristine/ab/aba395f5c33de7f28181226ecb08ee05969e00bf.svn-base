@@ -1,0 +1,1041 @@
+<template>
+  <div class="templ">
+    <header>
+      <p>详情</p>
+      <span @click="goback" class="icon-chs_sywx_ic_jt_left"></span>
+      <!--有分享菜单-->
+      <!--<span class="icon-chs_sywx_ic_detail_share"></span>-->
+      <!--收藏-->
+      <span class="icon-chs_sywx_ic_detail_like" @click="addCollection"></span>
+    </header>
+
+
+    <!--影片详情-->
+    <div id="detail">
+      <figure>
+        <img :src="'/cms/res/posters/mobile/' + videoMsg.posterUrl"/>
+        <figcaption>
+          <h1>{{ videoMsg.name | isEmpty }}</h1>
+          <h2>年份：{{ videoMsg.year | isEmpty }}</h2>
+          <h2>地区：{{ videoMsg.region | areaJduge }}</h2>
+          <h2>类型：{{ videoMsg.genre | isEmpty }}</h2>
+          <button id="forTv" @click="TVplay();">
+            <span class="icon-chs_sywx_ic_detail_tp"></span>
+            电视观看
+          </button>
+          <!--<button id="forPhone">-->
+            <!--<span class="icon-chs_sywx_ic_detail_phone"></span>-->
+            <!--手机观看-->
+          <!--</button>-->
+        </figcaption>
+      </figure>
+    </div>
+
+
+    <!--简介-->
+    <div id="intro">
+      <h1>
+        简介
+        <div class="leftBorder"></div>
+        <!--<span class="icon-chs_sywx_ic_my_jt"></span>-->
+      </h1>
+      <div class="label">
+        <!--v-for循环-->
+        <button v-for="item in videoMsg.actors">{{ item | isEmpty }}</button>
+      </div>
+      <p>{{ videoMsg.introduction }}</p>
+    </div>
+
+
+    <!--剧集-->
+    <div id="episode" v-show="isMovie1!==isMovie2">
+      <h1>
+        剧集
+        <div class="leftBorder"></div>
+      </h1>
+      <div :class="moreCss">
+        <button v-for="(n, i) in episode" :class="{butActive:but_index==i, button1:$route.query.isZhgq!='zhgq'}" @click="changeJujiID(n.id, i);">
+
+          <span v-if="isZongyi">{{ n.name }}</span>
+          <span v-else>{{ n.chaper }}</span>
+        </button>
+      </div>
+      <p id="more" @click="aaa();">{{ isMore }}</p>
+    </div>
+
+
+    <!--推荐-->
+    <div id="recommend">
+      <h1>
+        为您推荐
+        <div class="leftBorder"></div>
+        <button @click="getRecommend();">换一批</button>
+      </h1>
+      <!--v-for循环-->
+      <div class="recommend-content">
+        <figure v-for="(item,index) in recommend" :class="{threeRecommend:index==0||index==1||index==2}" @click="goContent(item.id, item.type, item.aaa); getRecommend(); goTop();">
+          <img :src="'/cms/res/posters/mobile/' + item.posterUrl"/>
+          <h2>{{ item.name }}</h2>
+        </figure>
+      </div>
+    </div>
+
+
+    <!--评论-->
+    <!--<section>-->
+      <!--<div class="comment">-->
+        <!--评论({{ comments_total }}条)-->
+        <!--<div id="dash"></div>-->
+      <!--</div>-->
+      <!--<div class="input">-->
+        <!--<input placeholder="我也来说几句..."/>-->
+        <!--<span class="icon-chs_sywx_ic_detail_news"></span>-->
+      <!--</div>-->
+
+      <!--&lt;!&ndash;这里用v-for输出数据&ndash;&gt;-->
+      <!--<ul>-->
+        <!--<li v-for="(item, index) in comments_List">-->
+          <!--<img :src="'http://122.193.8.107:8080/msmp/avatar/' + item.clientAvatar" class="touxiang"/>-->
+          <!--<h2 class="comCon1">{{ item.clientAlias }}<span>{{ setTime(item.createTime) | dateInit }}</span></h2>-->
+          <!--<h1 class="comCon2">-->
+            <!--{{ item.commentContent }}-->
+
+          <!--</h1>-->
+          <!--<h3>{{ index + 1 }}层</h3>-->
+          <!--<p>回复</p>-->
+          <!--<span class="icon-chs_sywx_ic_detail_news"></span>-->
+        <!--</li>-->
+      <!--</ul>-->
+    <!--</section>-->
+
+
+    <!--评论结束-->
+    <!--<div id="end">-->
+      <!--<p>{{ commentTips }}</p>-->
+    <!--</div>-->
+    <img class="godownload" src="../../assets/images/lianjie.png" alt="" @click="goDownLoad();">
+    <!--<div id="footerHeight"></div>-->
+
+  </div>
+</template>
+
+<script>
+
+  import { Toast } from 'mint-ui';
+  import '@/assets/js/strophe'
+  import '@/assets/js/strophe.muc'
+  import '@/assets/js/strophe.register'
+
+  export default {
+    data: function () {
+      return {
+        type: "",
+        episode: [],
+        recommend: [],
+        isMore: "",
+        moreCss: "number2",
+        comments_List: [],
+        comments_total: 0,
+        videoMsg: {},
+        isMovie1: "movie",
+        isMovie2: this.$route.query.type == "vpg_video" || this.$route.query.type == "local_vpg_video" ? "movie" : this.$route.query.type,
+        commentTips: "",
+        isZongyi: false,
+        button: "",
+        id: undefined,     //当前电影的id
+        name: "",          //当前电影的名字
+        toast: null,
+        server: 'dp0.sz96296.com',
+        BOSH_SERVICE: 'ws://122.193.8.100:7076/websocket',
+        jujiID: "",
+        but_index: -1
+      }
+    },
+    filters: {
+      areaJduge(v1) {
+        if (v1 == 1) {
+          return "大陆";
+        }
+        else if (v1 == 2) {
+          return "港澳台";
+        }
+        else if (v1 == 3) {
+          return "欧美";
+        }
+        else if (v1 == 4) {
+          return "日韩";
+        }
+        else if (v1 == 5) {
+          return "东南亚";
+        }
+        else if (v1 == 6) {
+          return "其他";
+        }
+        else if (v1 == "") {
+          return "暂无"
+        }
+      },
+      isEmpty(v1) {
+        return v1 == "" ? "暂无" : v1;
+      },
+      dateInit(v1) {
+        var str = v1.replace("T", " ");
+        return str.substring(0, str.indexOf("+"));
+      }
+    },
+    created(){
+
+      this.getVideoDetail();
+      this.getRecommend();
+      this.getJuji();
+//      this.getComment();
+//      this.xmpp();
+
+    },
+    mounted(){
+      this.aaa();
+      this.goTop();
+    },
+    updated() {
+
+    },
+    watch: {
+      "$route": "routeFun",
+    },
+    methods: {
+      goback() {
+        this.$router.go(-1);
+      },
+      getVideoDetail(){
+
+        var id = this.$route.query.id,
+            type = this.$route.query.type;
+
+        if (type == "vpg_video" || type == "movie" || type == "") {
+          type = "movie";
+        } else if (type == "vpg_package" || type == "package" || type == "package-title") {
+          type = "package";
+        }
+
+        var url = "/cms/thirdPartyPortalInterfaceV2/getVideoDetail.service?type=" + type + "&id=" + id,
+            actors = [];
+
+        this.$http.get(url).then(res => {
+            var data = res.body;
+            this.videoMsg = data.video;
+            this.id = data.video.id;
+            this.name = data.video.name;
+            actors = data.video.actors.split(/、|,|，|\/|\s/);
+            this.videoMsg.actors = actors;
+            for (var i = 0; i < this.videoMsg.actors.length; i++) {
+              if (this.videoMsg.actors[i] == "") {
+                this.videoMsg.actors.splice(i,1);
+                i= i-1;
+              }
+            }
+          },
+          res => {
+            console.log("错误" + res);
+          })
+      },
+      getRecommend(){
+        this.toast = Toast({
+          message: '加载中...',
+          position: 'middle',
+          duration: -1
+        });
+        var id = this.$route.query.id;
+        var url = "/mobileapp/interfaceservice/listRecommend?resFormat=json&contentId=" + id;
+
+        this.$http.get(url).then(res => {
+            var data = res.body;
+//            console.log(data);
+            this.recommend = data.videoList;
+            if (this.$route.query.isZhgq == "zhgq") {
+              for (var i = 0; i < this.recommend.length; i++) {
+                this.recommend[i].aaa = "zhgq";
+              }
+            }
+            this.toast.close();
+          },
+          res => {
+            console.log("错误" + res);
+          })
+      },
+      getJuji(){
+        if (this.isMovie2 == "package" || this.isMovie2 == "vpg_package" || this.isMovie2 == "package-title" || this.isMovie2 == "package-chapter") {
+          var id = this.$route.query.id,
+            url = "/mobileapp/interfaceservice/listVideo?sortBy=chapter&scope=direct&pageSize=100&categoryId=" + id + "&resFormat=json";
+
+          if (this.$route.query.isZhgq == "zhgq") {
+            this.isZongyi = true;
+            this.button = "";
+          }
+
+          this.$http.get(url).then(res => {
+              var data = res.body
+              if (this.$route.query.isZhgq == "zhgq") {
+                this.isMore = "更多↓";
+              } else {
+                this.button = "button1";
+              }
+
+              if (data.response.videoList.video.length > 10) {
+                this.isMore = "更多↓";
+              }
+              this.episode = data.response.videoList.video;
+              this.jujiID = this.episode[0].id;
+            },
+            res => {
+              console.log("错误" + res);
+            })
+
+        } else {
+          return
+        }
+      },
+      changeJujiID(id, index) {
+        this.jujiID = id;
+        this.but_index = index;
+      },
+      getComment(){
+        var id = this.$route.query.id;
+        var url = "/mobileapp/interfaceservice/listComment?resFormat=json&pageNum=1&contentType=vpg_video&contentId=" + id + "&targetType=mobile&pageSize=20";
+
+        this.$http.get(url).then(res => {
+            var data = res.body;
+            this.comments_List = data.listCommentResponse.commentList.comment;
+            this.comments_total = data.listCommentResponse.pageInfo.totalNum;
+            if (this.comments_total == 0) {
+              this.commentTips = "暂无评论哦!";
+            } else {
+              this.commentTips = "评论看完了，来一发吧!";
+            }
+          },
+          res => {
+            console.log("错误" + res);
+          })
+      },
+      aaa(){
+        if (this.isMore == "更多↓") {
+          this.moreCss = "number1";
+          this.isMore = "收回↑";
+        }
+        else if (this.isMore == "收回↑") {
+          this.isMore = "更多↓"
+          this.moreCss = "number2";
+        }
+      },
+      aaa2(){
+        if (this.isMore == "收回↑") {
+          this.isMore = "更多↓"
+          this.moreCss = "number2";
+        } else if (this.isMore == "更多↓") {
+          return
+        }
+      },
+      goTop(){
+        document.body.scrollTop = 0;
+      },
+      goDownLoad() {
+        window.location.href = "http://dp2.sz96296.com:8091/download/index.html";
+      },
+      setTime(v1){
+        return this.$moment(v1, "YYYYMMDD, h:mm:ss").format();
+      },
+      goContent(id, type, isZhgq){
+        this.$router.push({path: 'detail', query: {id: id, type: type, isZhgq: isZhgq}});
+      },
+      routeFun(){
+        this.getVideoDetail();
+        this.getJuji();
+        this.aaa2();
+      },
+      addCollection() {
+        //先判断有没有登录
+        if (this.$store.state.openid == 0 || this.$store.state.openid == -1 || this.$store.state.openid == undefined) {
+          alert("请先登录!");
+          return
+        }
+
+        //收藏
+        var url = '/cms/thirdPartyPortalInterfaceV2/addCollection.service?id=' + this.id + '&videoName=' + this.name + '&clientId=' + this.$store.state.openid + '&terminalType=mobile&videoType=vpg'
+
+        this.$http.get(url).then(res => {
+          var data = res.body;
+          if (data.code == 0) {
+            Toast({
+              message: '收藏成功!',
+              position: 'middle',
+              duration: 1000
+            })
+          }
+          else if (data.code == 97) {
+            Toast({
+              message: '已收藏过啦!',
+              position: 'middle',
+              duration: 1000
+            })
+          }
+
+        }, res => {
+          alert("收藏失败，请稍候再试！");
+        })
+      },
+      TVplay() {
+        //剧集类投屏
+        if (this.$route.query.type == "vpg_package") {
+          this.$emit("send", "package", {ID: this.jujiID});
+        }
+        else if (this.$route.query.type == "package-title") {
+          this.$emit("send", "package", {ID: this.jujiID});
+        }
+        else if (this.$route.query.type == "package-chapter") {
+          this.$emit("send", "package", {ID: this.jujiID});
+        }
+        else if (this.$route.query.type == "package") {
+          this.$emit("send", "package", {ID: this.jujiID});
+        }
+        //电影类投屏
+        else if (this.$route.query.type == "movie") {
+          this.$emit("send", "movie", {ID: this.$route.query.id});
+        }
+        else if (this.$route.query.type == "vpg_video") {
+          this.$emit("send", "movie", {ID: this.$route.query.id});
+        }
+        else if (this.$route.query.type == "local_vpg_video") {
+          this.$emit("send", "movie", {ID: this.$route.query.id});
+        }
+      },
+      xmpp() {
+        if (this.$store.state.connection == null) {
+          if (this.$store.state.openid == 0 || this.$store.state.openid == undefined || this.$store.state.openid == -1) {
+            return
+          } else if (this.$store.state.STBid == "") {
+            return
+          }
+
+          this.toast = Toast("连接中,给我几秒,请稍等...");
+          var that = this;
+          var url = this.BOSH_SERVICE;
+          this.$store.commit("connection", new Strophe.Connection(url));
+          var username = this.$store.state.openid;
+          var password = "123456";
+
+          var registerCallback = function (status) {
+            if (status === Strophe.Status.REGISTER) {
+              that.$store.state.connection.register.fields.username = username;
+              that.$store.state.connection.register.fields.password = password;
+              that.$store.state.connection.register.submit();
+            } else if (status === Strophe.Status.REGISTERED) {
+              that.$store.state.connection.authenticate();
+            } else if (status === Strophe.Status.CONNECTED) {
+              that.toast.close();
+              Toast({
+                message: '连接成功!',
+                duration: 1000
+              });
+            } else if (status === Strophe.Status.ERROR) {
+              that.toast.close();
+              Toast({
+                message: '连接发生错误!',
+                duration: 1000
+              });
+            } else if (status === Strophe.Status.CONNTIMEOUT) {
+              that.toast.close();
+              Toast({
+                message: '连接超时!',
+                duration: 1000
+              });
+            }
+          }
+          that.$store.state.connection.register.connect(this.server, registerCallback);
+        }
+      },
+      sendMsg(msg) {
+
+        var to = this.$store.state.STBid + "@" + this.server;
+        var from = this.$store.state.openid + "@" + this.server;
+        var con = "";
+
+        if (msg == "KEY_QUIT") {
+          con = '<Keyboard><InstanceID>0</InstanceID><Unit>KEYBOARD_CODE</Unit><Target>-16777202</Target></Keyboard>';
+        }
+        else if (msg == "KEY_MENU") {
+          con = '<Keyboard><InstanceID>0</InstanceID><Unit>KEYBOARD_CODE</Unit><Target>-16777203</Target></Keyboard>';
+        }
+        else if (msg == "KEY_VOLUME_DOWN") {
+          con = '<Keyboard><InstanceID>0</InstanceID><Unit>KEYBOARD_CODE</Unit><Target>-16777188</Target></Keyboard>';
+        }
+        else if (msg == "KEY_VOLUME_UP") {
+          con = '<Keyboard><InstanceID>0</InstanceID><Unit>KEYBOARD_CODE</Unit><Target>-16777189</Target></Keyboard>';
+        }
+        else if (msg == "KEY_UP") {
+          con = '<Keyboard><InstanceID>0</InstanceID><Unit>KEYBOARD_CODE</Unit><Target>-16777197</Target></Keyboard>';
+        }
+        else if (msg == "KEY_DOWN") {
+          con = '<Keyboard><InstanceID>0</InstanceID><Unit>KEYBOARD_CODE</Unit><Target>-16777196</Target></Keyboard>';
+        }
+        else if (msg == "KEY_LEFT") {
+          con = '<Keyboard><InstanceID>0</InstanceID><Unit>KEYBOARD_CODE</Unit><Target>-16777198</Target></Keyboard>';
+        }
+        else if (msg == "KEY_RIGHT") {
+          con = '<Keyboard><InstanceID>0</InstanceID><Unit>KEYBOARD_CODE</Unit><Target>-16777195</Target></Keyboard>';
+        }
+        else if (msg == "KEY_OK") {
+          con = '<Keyboard><InstanceID>0</InstanceID><Unit>KEYBOARD_CODE</Unit><Target>-16777199</Target></Keyboard>';
+        }
+        else if (msg == "KEY_POWER") {
+          con = '<Keyboard><InstanceID>0</InstanceID><Unit>KEYBOARD_CODE</Unit><Target>-16777215</Target></Keyboard>';
+        }
+        else if (msg == "KEY_BACK") {
+          con = '<Keyboard><InstanceID>0</InstanceID><Unit>KEYBOARD_CODE</Unit><Target>-16777201</Target></Keyboard>';
+        }
+        else if (msg == "0") {
+          con = '<Keyboard><InstanceID>0</InstanceID><Unit>KEYBOARD_CODE</Unit><Target>-16777204</Target></Keyboard>';
+        }
+        else if (msg == "1") {
+          con = '<Keyboard><InstanceID>0</InstanceID><Unit>KEYBOARD_CODE</Unit><Target>-16777213</Target></Keyboard>';
+        }
+        else if (msg == "2") {
+          con = '<Keyboard><InstanceID>0</InstanceID><Unit>KEYBOARD_CODE</Unit><Target>-16777212</Target></Keyboard>';
+        }
+        else if (msg == "3") {
+          con = '<Keyboard><InstanceID>0</InstanceID><Unit>KEYBOARD_CODE</Unit><Target>-16777211</Target></Keyboard>';
+        }
+        else if (msg == "4") {
+          con = '<Keyboard><InstanceID>0</InstanceID><Unit>KEYBOARD_CODE</Unit><Target>-16777210</Target></Keyboard>';
+        }
+        else if (msg == "5") {
+          con = '<Keyboard><InstanceID>0</InstanceID><Unit>KEYBOARD_CODE</Unit><Target>-16777209</Target></Keyboard>';
+        }
+        else if (msg == "6") {
+          con = '<Keyboard><InstanceID>0</InstanceID><Unit>KEYBOARD_CODE</Unit><Target>-16777208</Target></Keyboard>';
+        }
+        else if (msg == "7") {
+          con = '<Keyboard><InstanceID>0</InstanceID><Unit>KEYBOARD_CODE</Unit><Target>-16777207</Target></Keyboard>';
+        }
+        else if (msg == "8") {
+          con = '<Keyboard><InstanceID>0</InstanceID><Unit>KEYBOARD_CODE</Unit><Target>-16777206</Target></Keyboard>';
+        }
+        else if (msg == "9") {
+          con = '<Keyboard><InstanceID>0</InstanceID><Unit>KEYBOARD_CODE</Unit><Target>-16777205</Target></Keyboard>';
+        }
+        else if (msg == "直播") {
+          con = '<SetAVTransportURI><InstanceID>0</InstanceID><CurrentURI></CurrentURI><CurrentURIMetaData>mediaType=3&Freq=' + this.$route.query.frequency + '&Symb=' + this.$route.query.symbolRate + '&Mod=' + this.$route.query.qam + '&ServiceID=' + this.$route.query.serviceId + '&RangeStart=0&RangeEnd=0&Volume=30&PlayOffset=0</CurrentURIMetaData></SetAVTransportURI>';
+        }
+        else if (msg == "回看") {
+          return
+          con = '<SetAVTransportURI><InstanceID>0</InstanceID><CurrentURI>http://172.18.224.25/cpg/programtimelineindex.action?clientid=' + this.$store.state.openid + '&groupid=5121&language=&channelid=' + this.$refs.show.channelId + '&channelcategoryid=61,63&isInside=YES&focus_y_num=1&focus_x_num=1&pageNum=8</CurrentURI><CurrentURIMetaData>mediaType=4&Freq=0&Symb=0&Mod=0&ServiceID=0&RangeStart=0&RangeEnd=0&Volume=30&PlayOffset=20</CurrentURIMetaData></SetAVTransportURI>';
+        }
+        else if (msg == "电影点播") {
+          con = '<SetAVTransportURI><InstanceID>0</InstanceID><CurrentURI>http://172.18.224.25/vpg/forsearchindex.do?appid=mobile&hd=y&movieassetid=' + this.$route.query.id + '</CurrentURI><CurrentURIMetaData>mediaType=4&Freq=0&Symb=0&Mod=0&ServiceID=0&RangeStart=0&RangeEnd=0&Volume=30&PlayOffset=48</CurrentURIMetaData></SetAVTransportURI>';
+        }
+        else if (msg == "剧集点播") {
+          con = '<SetAVTransportURI><InstanceID>0</InstanceID><CurrentURI>http://172.18.224.25/vpg/forsearchindex.do?appid=mobile&hd=y&movieassetid=' + this.jujiID + '</CurrentURI><CurrentURIMetaData>mediaType=4&Freq=0&Symb=0&Mod=0&ServiceID=0&RangeStart=0&RangeEnd=0&Volume=30&PlayOffset=48</CurrentURIMetaData></SetAVTransportURI>';
+        }
+
+        var m = $msg({
+          to: to, //发送过去的地址(机顶盒号id+域名)
+          from: from, //本地地址
+          type: 'chat'
+        }).c("body").t(con);
+
+        this.$store.state.connection.send(m);
+
+      }
+    }
+  };
+
+</script>
+
+<style scoped>
+
+  .templ {
+    min-height: 100vh;
+  }
+
+  #footerHeight {
+    margin-top: 9vh;
+  }
+
+  .touxiang {
+    width: 8vw;
+    margin-top: 1px;
+  }
+
+  h1, h2 {
+    margin: 0;
+    line-height: 100%;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+
+  p {
+    margin: 0;
+  }
+
+  figure {
+    margin: 0;
+    padding: 0;
+  }
+
+  img {
+    display: block;
+    max-width: 100%;
+  }
+
+  /*头部*/
+  header {
+    background-color: #FF3E05;
+    height: 8vh;
+    line-height: 8vh;
+    position: relative;
+  }
+
+  header p {
+    font-family: "Microsoft Yahei";
+    font-size: 17px;
+    text-align: center;
+    color: #fff;
+    /*padding:16px 0 0 0;*/
+  }
+
+  .icon-chs_sywx_ic_jt_left, .icon-chs_sywx_ic_detail_share, .icon-chs_sywx_ic_detail_like {
+    font-size: 20px;
+    color: #fff;
+  }
+
+  .icon-chs_sywx_ic_jt_left {
+    position: absolute;
+    left: 4.5%;
+    top: 14px;
+  }
+
+  .icon-chs_sywx_ic_detail_share {
+    position: absolute;
+    right: 16%;
+    top: 14px;
+  }
+
+  .icon-chs_sywx_ic_detail_like {
+    position: absolute;
+    right: 4.5%;
+    top: 14px;
+  }
+
+  /* 影片详情 */
+  #detail figure {
+    background-color: #fff;
+    padding: 16px 0 16px 4.5%;
+    margin: 0 0 8px 0;
+    overflow: hidden;
+  }
+
+  #detail img {
+    float: left;
+    width: 32%;
+    /*margin-bottom:;*/
+  }
+
+  #detail figcaption {
+    width: 58%;
+    height: 149px;
+    margin-left: 4.5%;
+    float: left;
+    position: relative;
+  }
+
+  #detail figure:after {
+    height: 0;
+    content: '.';
+    display: block;
+    clear: both;
+    visibility: hidden;
+  }
+
+  #detail figcaption h1 {
+    height: 20px;
+    font-size: 18px;
+    line-height: 20px;
+    font-family: "Microsoft Yahei";
+    color: #FF3E05;
+    margin: 0 0 14px 0;
+  }
+
+  #detail figcaption h2 {
+    height: 16px;
+    line-height: 16px;
+    font-size: 14px;
+    font-family: "Microsoft Yahei";
+    color: #999;
+    margin-bottom: 8px;
+  }
+
+  #detail figcaption button {
+    padding: 0;
+    color: #fff;
+    width: 45%;
+    height: 36px;
+    border-radius: 3px;
+    border: 0;
+    text-align: center;
+    font-size: 13px;
+    font-family: "Microsoft Yahei";
+  }
+
+  #detail figcaption button#forTv {
+    background-color: #FF3E05;
+    position: absolute;
+    bottom: 0;
+  }
+
+  #detail figcaption button#forPhone {
+    background-color: #00C72E;
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+  }
+
+  #detail figcaption button span {
+    font-size: 14px;
+  }
+
+  /*简介  */
+  /*这边有个bug,去掉边框h1掉下去,所以加个白色边框*/
+  #intro {
+    border: 1px solid #fff;
+    background-color: #fff;
+    /*height:127px;*/
+    margin: 0 0 8px 0;
+  }
+
+  #intro h1 {
+    font-size: 16px;
+    font-family: "Microsoft Yahei";
+    color: #3C3C3C;
+    padding-left: 8px;
+    margin: 12px 0 0 4.5%;
+    position: relative;
+  }
+
+  .leftBorder {
+    width: 3px;
+    height: 16px;
+    border-radius: 2px;
+    background-color: #FF3E05;
+    position: absolute;
+    top: 0;
+    left: 0;
+  }
+
+  .icon-chs_sywx_ic_my_jt {
+    font-size: 15px;
+    color: #d5d5d5;
+    position: absolute;
+    top: 0px;
+    right: 4.5%;
+  }
+
+  #intro .label {
+    margin-top: 8px;
+    border-top: 1px solid #eee;
+    padding-top: 9px;
+  }
+
+  #intro .label button {
+    border-radius: 0;
+    margin: 0 0 2% 2%;
+    height: 30px;
+    color: #3C3C3C;
+    font-family: "Microsoft Yahei";
+    font-size: 14px;
+  }
+
+  #intro p {
+    padding: 0 2% 2% 2%;
+    color: #979797;
+    font-family: "Microsoft Yahei";
+    font-size: 14px;
+    line-height: 1.3;
+  }
+
+  /*剧集  */
+  /*高度自适应,由集数决定，每行值显示5集*/
+  /*这边有个bug,去掉边框h1掉下去,所以加个白色边框*/
+  #episode {
+    border: 1px solid #fff;
+    background-color: #fff;
+    margin: 0 0 8px 0;
+  }
+
+  #episode h1 {
+    font-size: 16px;
+    font-family: "Microsoft Yahei";
+    color: #3C3C3C;
+    padding-left: 8px;
+    margin: 12px 0 0 4.5%;
+    position: relative;
+  }
+
+  #episode .number1 {
+    text-align: center;
+    margin-top: 8px;
+    border-top: 1px solid #eee;
+    padding: 9px 0 0 8.5%;
+    overflow: hidden;
+  }
+  #episode .number2 {
+    text-align: center;
+    margin-top: 8px;
+    border-top: 1px solid #eee;
+    padding: 9px 0 0 8.5%;
+    height: 75px;
+    overflow: hidden;
+  }
+
+  #episode button {
+    width: 80%;
+    padding: 0;
+    margin: 0 2% 9px 4.5%;
+    border-radius: 0;
+    border: 1px solid #b6b6b6;
+    background-color: #fff;
+    height: 30px;
+    /*width: 90%;*/
+    float: left;
+    overflow: hidden; /*自动隐藏文字*/
+    text-overflow: ellipsis;/*文字隐藏后添加省略号*/
+    white-space: nowrap;/*强制不换行*/
+  }
+  .button1 {
+    width: 11.1% !important;
+  }
+  .butActive {
+    color: #FF3E05;
+    border: 1px solid #FF3E05 !important;
+  }
+  #episode button span {
+
+  }
+
+  #episode .numberSelect {
+    border-color: #FF3E05;
+  }
+
+  /*为您推荐  */
+  #recommend {
+    border: 1px solid #fff;
+    background-color: #fff;
+    overflow: hidden;
+    margin: 0 0 0 0;
+    padding-bottom: 8px;
+  }
+
+  #recommend h1 {
+    height: 18px;
+    font-size: 16px;
+    font-family: "Microsoft Yahei";
+    color: #3C3C3C;
+    padding-left: 8px;
+    margin: 12px 0 0 4.5%;
+    position: relative;
+  }
+
+  #recommend h1 button {
+    padding: 0;
+    width: 51px;
+    height: 18px;
+    border-radius: 8px;
+    font-size: 13px;
+    color: #000000;
+    font-family: "Microsoft Yahei";
+    position: absolute;
+    right: 4.5%;
+    line-height: 100%;
+  }
+
+  #recommend .recommend-content {
+    border-top: 1px solid #eee;
+    margin: 12px 3% 0 4.5%;
+    padding-top: 16px;
+  }
+
+  #recommend .recommend-content figure {
+    display: inline-block;
+    width: 23.3%;
+
+  }
+
+  #recommend .recommend-content h2 {
+    font-size: 13px;
+    color: #979797;
+    font-family: "Microsoft Yahei";
+    padding-top: 8px;
+    text-align: center;
+  }
+
+  /*前三个右边留空*/
+  .threeRecommend {
+    margin-right: 2.2%;
+  }
+
+  /*评论*/
+  section {
+    background-color: #fff;
+  }
+
+  /*评论条数  */
+  section .comment {
+    position: relative;
+    height: 41px;
+    font-size: 16px;
+    font-family: "Microsoft YaHei";
+    color: #3C3C3C;
+    line-height: 41px;
+    padding-left: 20px;
+    border-bottom: 1px solid #eee;
+  }
+
+  section .comment #dash {
+    width: 4px;
+    height: 19px;
+    background-color: #FF3E05;
+    position: absolute;
+    left: 8px;
+    top: 11px;
+    border-radius: 4px;
+  }
+
+  /*输入框*/
+  section .input {
+    height: 72px;
+    text-align: center;
+    line-height: 72px;
+    border-bottom: 1px solid #eee;
+    position: relative;
+  }
+
+  section input {
+    border: 0;
+    background-color: #F3F3F3;
+    width: 296px;
+    height: 41px;
+    color: #222222;
+    font-size: 13px;
+    font-family: "Microsoft Yahei";
+    text-align: center;
+  }
+
+  section input::-webkit-input-placeholder {
+    color: #979797;
+    font-size: 13px;
+    font-family: "Microsoft Yahei";
+  }
+
+  /*怎么保证这个图标离字的距离保持一定*/
+  section .input .icon-chs_sywx_ic_detail_news {
+    font-size: 17px;
+    color: #979797;
+    position: absolute;
+    left: 31%;
+    top: 30px;
+  }
+
+  section li {
+    position: relative;
+    height: 62px;
+    border-bottom: 1px solid #eee;
+  }
+
+  section li img {
+    border-radius: 50%;
+    position: absolute;
+    left: 17px;
+    top: 15px;
+  }
+
+  section li h2 {
+    margin: 0;
+    padding-left: 55px;
+    padding-top: 13px;
+    font-size: 12px;
+    color: #979797;
+    font-family: "Microsoft YaHei";
+  }
+
+  section li h2 span {
+    font-size: 11px;
+    padding-left: 8px;
+  }
+
+  section li h1 {
+    margin: 0;
+    padding-top: 9px;
+    padding-left: 55px;
+    font-size: 15px;
+    color: #000000;
+    font-family: "Microsoft YaHei";
+  }
+
+  section li h3 {
+    margin: 0;
+    position: absolute;
+    right: 15px;
+    top: 16px;
+    font-size: 12px;
+    color: #979797;
+    font-family: "Microsoft YaHei";
+  }
+
+  section li p {
+    color: #FF3E05;
+    font-size: 12px;
+    font-family: "Microsoft Yahei";
+    position: absolute;
+    right: 3%;
+    bottom: 9px;
+  }
+
+  section li .icon-chs_sywx_ic_detail_news {
+    color: #FF3E05;
+    font-size: 12px;
+    font-family: "Microsoft Yahei";
+    position: absolute;
+    right: 10.5%;
+    bottom: 8px;
+  }
+
+  #end {
+    height: 48px;
+    background-color: #fff;
+  }
+
+  #end p {
+    font-size: 15px;
+    font-family: "Microsoft Yahei";
+    color: #000;
+    text-align: center;
+    line-height: 48px;
+  }
+
+  #more {
+    position: relative;
+    right: -78vw;
+    color: #FF3E05;
+    margin: 4px 0 9px 0;
+    display: inline-block;
+  }
+
+  .comCon1 {
+    height: 2.5vh;
+  }
+  .comCon2 {
+    height: 4vh;
+  }
+  .godownload {
+    position: relative;
+    bottom: 0
+  }
+</style>

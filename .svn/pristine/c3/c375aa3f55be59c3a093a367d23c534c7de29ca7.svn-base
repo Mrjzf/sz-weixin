@@ -1,0 +1,230 @@
+<template>
+  <div class="templ">
+
+    <header>
+      我的
+    </header>
+
+
+    <figure>
+      <img :src="$store.state.headImg"/>
+      <hgroup>
+        <h1>{{ $store.state.nickName }}</h1>
+        <!--<h1>{{  }}</h1>-->
+      </hgroup>
+      <!--<span class="icon-chs_sywx_ic_my_jt"></span>-->
+    </figure>
+
+
+    <section>
+
+      <!--在整个div上绑定跳转-->
+      <router-link to="/record/recordzb">
+        <div class="history">
+          <span class="icon-chs_sywx_ic_my_history"></span>
+          <h1>播放历史</h1>
+          <span class="icon-chs_sywx_ic_my_jt second"></span>
+        </div>
+      </router-link>
+
+      <div class="collect">
+        <span class="icon-chs_sywx_ic_my_coll"></span>
+        <h1>我的收藏</h1>
+        <span class="icon-chs_sywx_ic_my_jt second"></span>
+      </div>
+
+      <div class="help">
+        <span class="icon-chs_sywx_ic_my_help"></span>
+        <h1>查看帮助</h1>
+        <span class="icon-chs_sywx_ic_my_jt second"></span>
+      </div>
+
+
+      <div class="bangding" @click="goSTBlist">
+        <span class="icon-chs_sywx_ic_my_box"></span>
+        <h1>绑定机顶盒</h1>
+        <span class="icon-chs_sywx_ic_my_jt second"></span>
+      </div>
+
+
+      <!--<div class="setting">-->
+        <!--<span class="icon-chs_sywx_ic_my_setting"></span>-->
+        <!--<h1>设置</h1>-->
+        <!--<span class="icon-chs_sywx_ic_my_jt second"></span>-->
+      <!--</div>-->
+
+    </section>
+
+
+    <router-view></router-view>
+
+
+  </div>
+</template>
+
+<script>
+
+  export default {
+    data: function () {
+      return {
+
+      }
+    },
+    created() {
+
+    },
+    mounted() {
+
+    },
+    methods: {
+      goBack() {
+        this.$router.go(-1);
+      },
+      goSTBlist() {
+        this.$router.push({path: 'STB_list'});
+      }
+    }
+    ,
+    components: {}
+  }
+  ;
+
+</script>
+
+
+<style scoped>
+
+  header {
+    background-color: #fff;
+    height: 52px;
+    text-align: center;
+    line-height: 49px;
+    font-size: 17px;
+    color: #3C3C3C;
+    font-family: "Microsoft YaHei";
+    border-bottom: 3px solid #FF4008;
+    margin-bottom: 8px;
+
+  }
+
+  .icon-chs_sywx_ic_jt_left {
+    font-size: 20px;
+    color: #FF3E05;
+    position: absolute;
+    left: 16px;
+    top: 15px;
+  }
+
+  figure {
+    background-color: #fff;
+    margin: 0;
+    height: 77px;
+    position: relative;
+    margin-bottom: 8px;
+  }
+
+  figure img {
+    display: block;
+    width: 15vw;
+    height: 15vw;
+    border-radius: 8vw;
+    position: relative;
+    left: 16px;
+    top: 2.5vw;
+  }
+
+  hgroup {
+    height: 38px;
+    position: absolute;
+    left: 85px;
+    top: 18px;
+  }
+
+  h1 {
+    font-weight: normal;
+  }
+
+  hgroup h1 {
+    height: 100%;
+    line-height: 11vw;
+    margin: 0;
+    font-size: 15px;
+    font-family: "Microsoft YaHei";
+    color: #3c3c3c;
+  }
+
+  hgroup h1:nth-child(2) {
+    padding-top: 8px;
+  }
+
+  .icon-chs_sywx_ic_my_jt {
+    font-size: 20px;
+    color: #d5d5d5;
+    position: absolute;
+    top: 31px;
+    right: 16px;
+  }
+
+  .history, .collect, .help, .bangding, .setting {
+    position: relative;
+    height: 49px;
+    border-bottom: 1px solid #eee;
+    background-color: #fff;
+  }
+
+  .help, .bangding {
+    margin-bottom: 8px;
+  }
+
+  .second {
+    top: 17px;
+  }
+
+  .icon-chs_sywx_ic_my_history, .icon-chs_sywx_ic_my_help {
+    color: #FDCC7E;
+    font-size: 22px;
+    display: inline-block;
+    padding-top: 18px;
+    padding-left: 16px;
+  }
+
+  .history h1, .collect h1, .help h1, .bangding h1, .setting h1 {
+    margin: 0;
+    font-size: 15px;
+    color: #3c3c3c;
+    font-family: "Microsoft YaHei";
+    display: inline-block;
+    position: absolute;
+    left: 51px;
+    top: 17px;
+  }
+
+  a {
+    color: #3c3c3c;
+  }
+
+  .icon-chs_sywx_ic_my_coll {
+    color: #FF6677;
+    font-size: 22px;
+    display: inline-block;
+    padding-top: 18px;
+    padding-left: 16px;
+  }
+
+  .icon-chs_sywx_ic_my_box {
+    color: #69E0A1;
+    font-size: 22px;
+    display: inline-block;
+    padding-top: 18px;
+    padding-left: 16px;
+  }
+
+  .icon-chs_sywx_ic_my_setting {
+    color: #71CFF3;
+    font-size: 22px;
+    display: inline-block;
+    padding-top: 18px;
+    padding-left: 16px;
+  }
+</style>
+
